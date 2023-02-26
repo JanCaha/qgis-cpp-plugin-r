@@ -1,0 +1,17 @@
+﻿# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+# https://zed0.co.uk/clang-format-configurator/
+
+---
+BasedOnStyle: LLVM
+# AccessModifierOffset: '-2'
+BreakBeforeBraces: Allman
+BreakConstructorInitializers: BeforeColon
+ColumnLimit: 120
+IndentCaseLabels: 'true'
+IndentWidth: '4'
+IndentAccessModifiers: 'true'
+PointerAlignment: Right
+SeparateDefinitionBlocks: Always
+SortIncludesOptions: CaseSensitive
+SpacesInParentheses: true
+...

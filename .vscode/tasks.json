@@ -1,0 +1,73 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cmake",
+			"label": "CMake: configure",
+			"command": "configure",
+			"problemMatcher": [],
+			"detail": "CMake template configure task"
+		},
+		{
+			"type": "cmake",
+			"label": "CMake: build",
+			"command": "build",
+			"targets": [
+				"all"
+			],
+			"group": "build",
+			"problemMatcher": [],
+			"detail": "CMake template build task",
+			"dependsOn": [
+				"CMake: configure"
+			]
+		},
+		{
+			"type": "cmake",
+			"label": "CMake: test",
+			"command": "test",
+			"problemMatcher": [],
+			"detail": "CMake template test task"
+		},
+		{
+			"label": "Run Test",
+			"type": "shell",
+			"command": [
+				"ctest"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/build"
+			},
+			"dependsOn": [
+				"CMake: build"
+			]
+		},
+		{
+			"label": "Copy Plugin",
+			"type": "shell",
+			"command": [
+				"cp",
+				"build/src/libplugin_cpp_tools.so",
+				"plugin/"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"dependsOn": [
+				"CMake: build"
+			]
+		},
+		{
+			"label": "Remove build dir",
+			"type": "shell",
+			"command": [
+				"rm",
+				"-rf",
+				"build"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			}
+		}
+	]
+}
