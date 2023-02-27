@@ -67,15 +67,14 @@ class RSettingsDialog : public QDialog
 
         void buttonBoxAccept()
         {
-            QString mRLibraryPath = mLibraryPath->text();
-            QSettings().setValue( QStringLiteral( "RStats/libraryPath" ), mRLibraryPath );
-            accept();
+            // QVariant path = QVariant( mLibraryPath->text() );
+            // QSettings().setValue( QStringLiteral( "RStats/libraryPath" ), path );
+            close();
         }
 
-        QString rLibraryPath() { return mRLibraryPath; }
+        QString rLibraryPath() { return mLibraryPath->text(); }
 
     private:
-        QString mRLibraryPath;
         QLineEdit *mLibraryPath;
 };
 
