@@ -26,7 +26,7 @@ set(r_plugin_RCCS
   pluginres.qrc
 )
 
-SET(PUBLIC_MOC_HEADERS_FILES
+SET(PUBLIC_HEADERS_FILES
   rplugin.h
   maplayerwrapper.h
   qgisapplicationrwrapper.h
@@ -36,15 +36,15 @@ SET(PUBLIC_MOC_HEADERS_FILES
   qgsrstatsconsole.h
 )
 
-QT5_WRAP_CPP(PUBLIC_MOC_SRCS ${PUBLIC_MOC_HEADERS_FILES})
-QT5_ADD_RESOURCES(r_plugin_RCCS_SRCS ${r_plugin_RCCS})
+# QT5_WRAP_CPP(PUBLIC_MOC_SRCS ${PUBLIC_MOC_HEADERS_FILES})
+# QT5_ADD_RESOURCES(r_plugin_RCCS_SRCS ${r_plugin_RCCS})
 
 # #######################################################
 # Build
 add_library(r_plugin MODULE
   ${r_plugin_SRCS}
-  ${r_plugin_RCCS_SRCS}
-  ${PUBLIC_MOC_SRCS}
+  ${r_plugin_RCCS}
+  ${PUBLIC_HEADERS_FILES}
   ${R_INSIDE}
 )
 
