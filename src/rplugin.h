@@ -1,6 +1,7 @@
 #ifndef RPLUGIN_H
 #define RPLUGIN_H
 
+#include <QAction>
 #include <QApplication>
 
 #include "qgis.h"
@@ -18,11 +19,14 @@ class RPlugin : public QObject, public QgisPlugin
         explicit RPlugin( QgisInterface *iface );
         void initGui() override;
         void unload() override;
+        void prepareForUse();
+        void showConsole();
 
     private:
         std::shared_ptr<QgisInterface> mIface = nullptr;
         std::shared_ptr<RStatsRunner> mRStatsRunner = nullptr;
         std::shared_ptr<QgsRStatsConsole> mRConsole = nullptr;
+        std::shared_ptr<QAction> mOpenConsole = nullptr;
 };
 
 static const QString sName = QStringLiteral( "R Plugin" );

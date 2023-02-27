@@ -11,15 +11,38 @@
 RPlugin::RPlugin( QgisInterface *iface )
     : QgisPlugin( sName, sDescription, sCategory, sPluginVersion, sPluginType ), mIface( iface )
 {
+    mOpenConsole = std::make_shared<QAction>( "Open R Console", this );
+    mOpenConsole->setIcon( QIcon( sPluginIcon ) );
+
+    connect( mOpenConsole.get(), &QAction::triggered, this, &RPlugin::showConsole );
+
+    mIface->pluginMenu()->addAction( mOpenConsole.get() );
 }
 
-void RPlugin::initGui()
+void RPlugin::showConsole()
 {
-    mRStatsRunner = std::make_shared<RStatsRunner>( mIface );
-    mRConsole = std::make_shared<QgsRStatsConsole>( mIface->mainWindow(), mRStatsRunner, mIface );
+    prepareForUse();
+    mRConsole->show();
 }
 
-void RPlugin::unload() {}
+void RPlugin::prepareForUse()
+{
+    if ( !mRStatsRunner )
+    {
+        mRStatsRunner = std::make_shared<RStatsRunner>( mIface );
+        mRConsole = std::make_shared<QgsRStatsConsole>( mIface->mainWindow(), mRStatsRunner, mIface );
+    }
+}
+
+void RPlugin::initGui() { prepareForUse(); }
+
+void RPlugin::unload()
+{
+    mIface->pluginMenu()->removeAction( mOpenConsole.get() );
+    mOpenConsole.reset();
+    mRConsole.reset();
+    mRStatsRunner.reset();
+}
 
 // Class factory to return a new instance of the plugin class
 QGISEXTERN QgisPlugin *classFactory( QgisInterface *qgisInterfacePointer )
