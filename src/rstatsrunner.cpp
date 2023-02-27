@@ -424,7 +424,7 @@ void RStatsRunner::execCommand( const QString &command )
     QMetaObject::invokeMethod( mSession.get(), "execCommand", Qt::QueuedConnection, Q_ARG( QString, command ) );
 }
 
-// bool RStatsRunner::busy() const { return mSession->busy(); }
+bool RStatsRunner::busy() const { return mSession->busy(); }
 
 void RStatsRunner::showStartupMessage()
 {
