@@ -23,6 +23,7 @@ void RPlugin::showConsole()
 {
     prepareForUse();
     mRConsole->show();
+    mRConsole->raise();
 }
 
 void RPlugin::prepareForUse()
