@@ -1,6 +1,7 @@
-#include "scopedprogresstask.h"
 #include "qgsapplication.h"
 #include "qgstaskmanager.h"
+
+#include "scopedprogresstask.h"
 
 ScopedProgressTask::ScopedProgressTask( const QString &description, bool canCancel )
     : mTask( new ProxyProgressTask( description, canCancel ) )
