@@ -55,7 +55,6 @@ class QgsRStatsConsole : public QgsDockWidget
         std::shared_ptr<RStatsRunner> mRunner = nullptr;
         QgsInteractiveRWidget *mInputEdit = nullptr;
         QgsCodeEditorR *mOutput = nullptr;
-        // QgsDockWidget *mDockWidget = nullptr;
         QAction *mReadRScript = nullptr;
 };
 

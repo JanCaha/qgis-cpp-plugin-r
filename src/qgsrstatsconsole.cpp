@@ -37,9 +37,11 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<RStatsRunne
                                     std::shared_ptr<QgisInterface> iface )
     : QgsDockWidget( parent ), mRunner( runner )
 {
+    setWindowTitle( QString( "R Console" ) );
     setObjectName( QString( "R Console" ) );
-    show();
-    iface->addDockWidget( Qt::DockWidgetArea::RightDockWidgetArea, this );
+    setWindowFlags( Qt::WindowType::Window );
+
+    iface->addDockWidget( Qt::DockWidgetArea::BottomDockWidgetArea, this );
 
     QToolBar *toolBar = new QToolBar( this );
     toolBar->setIconSize( iface->iconSize( true ) );
