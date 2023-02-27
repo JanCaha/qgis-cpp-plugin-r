@@ -18,6 +18,12 @@
 #include "qgscodeeditor.h"
 #include "qgscodeeditorr.h"
 
+#include "QDialog"
+#include "QDialogButtonBox"
+#include "QDir"
+#include "QFormLayout"
+#include "QLineEdit"
+#include "QSettings"
 #include <QFileDialog>
 #include <QKeyEvent>
 #include <QLineEdit>
@@ -32,6 +38,46 @@
 #include "qgsdockwidgetplugin.h"
 
 #include "rstatsrunner.h"
+
+class RSettingsDialog : public QDialog
+{
+    public:
+        RSettingsDialog( QWidget *parent ) : QDialog( parent )
+        {
+            setMinimumSize( 500, 200 );
+
+            QFormLayout *fl = new QFormLayout();
+            setLayout( fl );
+
+            QLineEdit *mLibraryPath = new QLineEdit( this );
+            mLibraryPath->setText(
+                QSettings()
+                    .value( QStringLiteral( "RStats/libraryPath" ),
+                            QVariant( QgsApplication::qgisSettingsDirPath() + QStringLiteral( "r_libs" ) ) )
+                    .toString() );
+
+            QDialogButtonBox *buttonBox = new QDialogButtonBox( QDialogButtonBox::Ok | QDialogButtonBox::Close, this );
+
+            connect( buttonBox, &QDialogButtonBox::accepted, this, &RSettingsDialog::buttonBoxAccept );
+            connect( buttonBox, &QDialogButtonBox::rejected, this, &RSettingsDialog::reject );
+
+            fl->addRow( QStringLiteral( "Path to R Libraries:" ), mLibraryPath );
+            fl->addWidget( buttonBox );
+        };
+
+        void buttonBoxAccept()
+        {
+            QString mRLibraryPath = mLibraryPath->text();
+            QSettings().setValue( QStringLiteral( "RStats/libraryPath" ), mRLibraryPath );
+            accept();
+        }
+
+        QString rLibraryPath() { return mRLibraryPath; }
+
+    private:
+        QString mRLibraryPath;
+        QLineEdit *mLibraryPath;
+};
 
 QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<RStatsRunner> runner,
                                     std::shared_ptr<QgisInterface> iface )
@@ -69,6 +115,21 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<RStatsRunne
                          mRunner->execCommand( line );
                      }
                      inputFile.close();
+                 }
+             } );
+
+    mSettings = new QAction( "Settings", this );
+    toolBar->addAction( mSettings );
+
+    connect( mSettings, &QAction::triggered, this,
+             [=]()
+             {
+                 RSettingsDialog *dialog = new RSettingsDialog( this );
+                 int result = dialog->exec();
+
+                 if ( result == RSettingsDialog::Accepted )
+                 {
+                     mRunner->execCommand( QStringLiteral( ".libPaths(\"%1\")" ).arg( dialog->rLibraryPath() ) );
                  }
              } );
 

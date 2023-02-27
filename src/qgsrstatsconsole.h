@@ -56,6 +56,7 @@ class QgsRStatsConsole : public QgsDockWidget
         QgsInteractiveRWidget *mInputEdit = nullptr;
         QgsCodeEditorR *mOutput = nullptr;
         QAction *mReadRScript = nullptr;
+        QAction *mSettings = nullptr;
 };
 
 #endif // QGSRSTATSCONSOLE_H
