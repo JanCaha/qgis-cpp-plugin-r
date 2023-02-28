@@ -4,6 +4,7 @@
 #include "qgsvariantutils.h"
 
 #include "qgisapplicationrwrapper.h"
+#include "rinteractingfunctions.h"
 #include "rstatsession.h"
 
 RStatsSession::RStatsSession( std::shared_ptr<QgisInterface> iface ) : mIface( iface )
@@ -22,7 +23,7 @@ RStatsSession::RStatsSession( std::shared_ptr<QgisInterface> iface ) : mIface( i
     Rcpp::XPtr<QgisApplicationRWrapper> wr( new QgisApplicationRWrapper( mIface ) );
     wr.attr( "class" ) = ".QGISPrivate";
     mRSession->assign( wr, ".QGISPrivate" );
-    // mRSession->assign( Rcpp::InternalFunction( &Dollar ), "$..QGISPrivate" );
+    mRSession->assign( Rcpp::InternalFunction( &Dollar ), "$..QGISPrivate" );
 
     QString error;
     execCommandPrivate( QStringLiteral( R"""(
@@ -38,7 +39,9 @@ RStatsSession::RStatsSession( std::shared_ptr<QgisInterface> iface ) : mIface( i
     toStars=function(layer) {.QGISPrivate$toStars(layer)},
     isVectorLayer=function(layer) { .QGISPrivate$isVectorLayer(layer) },
     isRasterLayer=function(layer) { .QGISPrivate$isRasterLayer(layer) },
-    dfToQGIS=function(df) { .QGISPrivate$dfToQGIS(df) }
+    dfToQGIS=function(df) { .QGISPrivate$dfToQGIS(df) },
+    layerId=function(layer){ .QGISPrivate$layerId(layer) },
+    featureCount=function(layer){ .QGISPrivate$featureCount(layer) }
   )
   class(QGIS) <- "QGIS"
   )""" ),
