@@ -3,6 +3,7 @@
 
 #include "qgisinterface.h"
 #include "qgsapplication.h"
+#include "qgsmaplayer.h"
 
 #include "maplayerwrapper.h"
 #include "qgisapplicationrwrapper.h"
@@ -16,8 +17,8 @@ class QgisApplicationRWrapper
 
         SEXP activeLayer() const
         {
-            std::shared_ptr<QgsMapLayer> mapLayer;
-            mapLayer.reset( mIface->activeLayer() );
+            QgsMapLayer *mapLayer = mIface->activeLayer();
+
             Rcpp::XPtr<MapLayerWrapper> res( new MapLayerWrapper( mapLayer ) );
             res.attr( "class" ) = "MapLayerWrapper";
             return res;

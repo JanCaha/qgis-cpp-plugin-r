@@ -369,8 +369,7 @@ SEXP MapLayerWrapperByName( std::string name )
     QList<QgsMapLayer *> layers = QgsProject::instance()->mapLayersByName( QString::fromStdString( name ) );
     if ( !layers.empty() )
     {
-        std::shared_ptr<QgsMapLayer> mapLayer;
-        mapLayer.reset( layers.at( 0 ) );
+        QgsMapLayer *mapLayer = layers.at( 0 );
         return Rcpp::XPtr<MapLayerWrapper>( new MapLayerWrapper( mapLayer ) );
     }
 
