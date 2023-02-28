@@ -1,5 +1,6 @@
-#include "QDir"
-#include "QString"
+#include <QDir>
+#include <QSettings>
+#include <QString>
 
 #include "qgsvariantutils.h"
 
@@ -21,7 +22,12 @@ RStatsSession::RStatsSession( std::shared_ptr<QgisInterface> iface ) : mIface( i
 
     mRSession->set_callbacks( this );
 
-    const QString userPath = QgsApplication::qgisSettingsDirPath() + QStringLiteral( "r_libs" );
+    const QString userPath =
+        QSettings()
+            .value( QStringLiteral( "RStats/libraryPath" ),
+                    QVariant( QgsApplication::qgisSettingsDirPath() + QStringLiteral( "r_libs" ) ) )
+            .toString();
+
     if ( !QFile::exists( userPath ) )
     {
         QDir().mkpath( userPath );
