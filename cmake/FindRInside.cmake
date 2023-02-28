@@ -13,50 +13,16 @@ find_program(R_EXECUTABLE
 )
 
 if(R_EXECUTABLE)
-    execute_process(COMMAND echo "RInside:::CxxFlags()"
-        COMMAND ${R_EXECUTABLE} --vanilla --slave
-        OUTPUT_VARIABLE RINSIDE_INCLUDE_DIR
-        ERROR_VARIABLE RINSIDE_INCLUDE_DIR_ERR
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
+    execute_process(COMMAND Rscript -e "RInside:::CxxFlags()" OUTPUT_VARIABLE RInside_INCLUDE_DIR_TMP)
 
-    execute_process(COMMAND echo "RInside:::LdFlags(static=0)"
-        COMMAND ${R_EXECUTABLE} --vanilla --slave
-        OUTPUT_VARIABLE RINSIDE_LIBRARY
-        ERROR_VARIABLE RINSIDE_LIBRARY_ERR
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
+    string(REGEX REPLACE "^-I" "" RInside_INCLUDE_DIR "${RInside_INCLUDE_DIR_TMP}")
 
-    string(REGEX MATCH "[a-zA-Z0-9/_\.-]+"
-        RINSIDE_LIBRARY ${RINSIDE_LIBRARY})
+    message(STATUS "***" ${RInside_INCLUDE_DIR})
 
-    string(REPLACE "-L" "" RINSIDE_LIBRARY ${RINSIDE_LIBRARY})
-    string(REPLACE "-I" "" RINSIDE_INCLUDE_DIR ${RINSIDE_INCLUDE_DIR})
-
-    set(RINSIDE_LIBRARY ${RINSIDE_LIBRARY}/libRInside.so)
-
-else()
-    set(RINSIDE_PKGCONF_INCLUDE_DIRS
-        "/usr/local/include /usr/include"
-        "/opt/R/site-library/RInside/include"
-        "/usr/local/lib/R/site-library/RInside/include"
-        "/usr/lib/R/site-library/RInside/include")
-
-    # Include dir
-    find_path(RINSIDE_INCLUDE_DIR
-        NAMES RInside.h
-        PATHS ${RINSIDE_PKGCONF_INCLUDE_DIRS}
-    )
-
-    set(RINSIDE_PKGCONF_LIBRARY_DIRS
-        "/usr/local/lib" "/usr/lib"
-        "/opt/R/site-library/RInside/lib" "/usr/local/lib/R/site-library/RInside/lib"
-        "/usr/lib/R/site-library/RInside/lib")
-
-    # Finally the library itself
-    find_library(RINSIDE_LIBRARY
-        NAMES libRInside.a libRInside.lib
-        PATHS ${RINSIDE_PKGCONF_LIBRARY_DIRS}
+    find_library(RInside_LIB
+        libRInside.so
+        PATHS
+        "${RInside_INCLUDE_DIR}/../lib"
     )
 endif(R_EXECUTABLE)
 
@@ -65,13 +31,19 @@ endif(R_EXECUTABLE)
 set(RINSIDE_INCLUDE_DIRS ${RINSIDE_INCLUDE_DIR})
 set(RINSIDE_LIBRARIES ${RINSIDE_LIBRARY})
 
-if(("${RINSIDE_INCLUDE_DIR}" STREQUAL "") OR("${RINSIDE_LIBRARY}" STREQUAL ""))
+if(("${RInside_INCLUDE_DIR}" STREQUAL "") OR("${RInside_INCLUDE_DIR}" STREQUAL ""))
     set(RINSIDE_FOUND FALSE)
     message(STATUS "Looking for RInside -- not found")
-    message(STATUS "Install it running 'R -e \"install.packages(\\\"RInside\\\",repos=\\\"http://cran.irsn.fr/\\\")\"'")
+    message(STATUS "Install it running 'R -e \"install.packages(\\\"RInside\\\")\"'")
 else()
     set(RINSIDE_FOUND TRUE)
     message(STATUS "Looking for RInside -- found")
-    message(STATUS ${RINSIDE_LIBRARY})
-    message(STATUS ${RINSIDE_INCLUDE_DIR})
+    message(STATUS ${RInside_LIB})
+    message(STATUS ${RInside_INCLUDE_DIR})
+
+    add_library(RInside UNKNOWN IMPORTED)
+    set_property(TARGET RInside PROPERTY IMPORTED_LOCATION "${RInside_LIB}")
+
+    mark_as_advanced(RInside_INCLUDE_DIR)
+    mark_as_advanced(RInside_LIB)
 endif()
