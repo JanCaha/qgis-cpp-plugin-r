@@ -10,7 +10,15 @@
 RStatsSession::RStatsSession( std::shared_ptr<QgisInterface> iface ) : mIface( iface )
 {
 
-    mRSession = std::make_unique<RInside>( 0, nullptr, true, false, true );
+    try
+    {
+        mRSession = new RInside( 0, nullptr, true, false, true );
+    }
+    catch ( const std::exception &e )
+    {
+        mRSession = RInside::instancePtr();
+    }
+
     mRSession->set_callbacks( this );
 
     const QString userPath = QgsApplication::qgisSettingsDirPath() + QStringLiteral( "r_libs" );

@@ -81,7 +81,7 @@ class RStatsSession : public QObject, public Callbacks
         void commandFinished( const QVariant &result );
 
     private:
-        std::unique_ptr<RInside> mRSession;
+        RInside *mRSession = RInside::instancePtr();
         bool mBusy = false;
         bool mEncounteredErrorMessageType = false;
         std::shared_ptr<QgisInterface> mIface;
