@@ -9,19 +9,21 @@
 #include "maplayerwrapper.h"
 #include "scopedprogresstask.h"
 
-MapLayerWrapper::MapLayerWrapper( const std::shared_ptr<QgsMapLayer> layer )
-    : mLayerId( layer ? layer->id() : QString() )
+MapLayerWrapper::MapLayerWrapper( const std::shared_ptr<QgsMapLayer> layer, std::shared_ptr<QgisInterface> iface )
+    : mLayerId( layer ? layer->id() : QString() ), mIface( iface )
 {
 }
 
 std::string MapLayerWrapper::id() const { return mLayerId.toStdString(); }
+
+QgsMapLayer *MapLayerWrapper::mapLayer() { return QgsProject::instance()->mapLayer( mLayerId ); }
 
 long long MapLayerWrapper::featureCount() const
 {
     long long res = -1;
     auto countOnMainThread = [&res, this]
     {
-        Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "featureCount",
+        Q_ASSERT_X( QThread::currentThread() == mIface->thread(), "featureCount",
                     "featureCount must be run on the main thread" );
 
         if ( QgsMapLayer *layer = QgsProject::instance()->mapLayer( mLayerId ) )
