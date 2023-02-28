@@ -8,7 +8,7 @@
 #include "qgisinterface.h"
 #include "qgisplugin.h"
 
-#include "qgsrstatsconsole.h"
+#include "gui/rstatsconsole.h"
 #include "rstatsrunner.h"
 
 class RPlugin : public QObject, public QgisPlugin
@@ -25,7 +25,7 @@ class RPlugin : public QObject, public QgisPlugin
     private:
         std::shared_ptr<QgisInterface> mIface = nullptr;
         std::shared_ptr<RStatsRunner> mRStatsRunner = nullptr;
-        std::shared_ptr<QgsRStatsConsole> mRConsole = nullptr;
+        std::shared_ptr<RStatsConsole> mRConsole = nullptr;
         std::shared_ptr<QAction> mOpenConsole = nullptr;
 };
 
