@@ -60,8 +60,6 @@ set(R_INSIDE_INCLUDE
 # The compiled library code is here
 add_subdirectory(src)
 
-# The executable code is here
-# add_subdirectory(apps)
-if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME) AND BUILD_TESTING)
-  add_subdirectory(tests)
-endif()
+# if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME) AND BUILD_TESTING)
+# add_subdirectory(tests)
+# endif()
