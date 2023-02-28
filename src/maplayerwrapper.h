@@ -18,8 +18,7 @@ class MapLayerWrapper
             terra
         };
 
-        MapLayerWrapper( const std::shared_ptr<QgsMapLayer> layer = nullptr,
-                         std::shared_ptr<QgisInterface> iface = nullptr );
+        MapLayerWrapper( const QgsMapLayer *layer = nullptr );
 
         std::string id() const;
         long long featureCount() const;
@@ -36,7 +35,6 @@ class MapLayerWrapper
 
     private:
         QString mLayerId;
-        std::shared_ptr<QgisInterface> mIface;
 
         SEXP toRasterDataObject( RasterPackage rasterPackage );
         QgsMapLayer *mapLayer();
