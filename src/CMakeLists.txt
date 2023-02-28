@@ -19,7 +19,11 @@ set(r_plugin_SRCS
   rstatsession.cpp
   rstatsrunner.cpp
   scopedprogresstask.cpp
-  qgsrstatsconsole.cpp
+  rinteractingfunctions.cpp
+
+  gui/rstatsconsole.cpp
+  gui/interactiverwidget.cpp
+  gui/rsettingsdialog.cpp
 )
 
 set(r_plugin_RCCS
@@ -33,7 +37,11 @@ SET(PUBLIC_HEADERS_FILES
   rstatsrunner.h
   rstatsession.h
   scopedprogresstask.h
-  qgsrstatsconsole.h
+  rinteractingfunctions.h
+
+  gui/rstatsconsole.h
+  gui/interactiverwidget.h
+  gui/rsettingsdialog.h
 )
 
 # QT5_WRAP_CPP(PUBLIC_MOC_SRCS ${PUBLIC_MOC_HEADERS_FILES})
@@ -61,7 +69,6 @@ target_include_directories(r_plugin PUBLIC
   ${R_INCLUDE_DIR}
   ${RCpp_INCLUDE_DIR}
   ${R_INSIDE_INCLUDE}
-  ${CMAKE_SOURCE_DIR}/inlude/
 )
 
 # target_link_libraries(r_plugin_tests ${LIBS})
@@ -71,7 +78,7 @@ include_directories(
   ${R_INCLUDE_DIR}
   ${RCpp_INCLUDE_DIR}
   ${R_INSIDE_INCLUDE}
-  ${CMAKE_SOURCE_DIR}/inlude/
+  ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 ADD_CUSTOM_COMMAND(
