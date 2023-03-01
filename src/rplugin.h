@@ -29,8 +29,9 @@ class RPlugin : public QObject, public QgisPlugin
         std::shared_ptr<QAction> mOpenConsole = nullptr;
 };
 
-static const QString sName = QStringLiteral( "R Plugin" );
-static const QString sDescription = QStringLiteral( "Plugin that allows running R directly in QGIS" );
+static const QString sName = QStringLiteral( "R Console Plugin" );
+static const QString sDescription =
+    QStringLiteral( "Plugin that allows running R directly in QGIS in form or R Console." );
 static const QString sCategory = QStringLiteral( "Vector" );
 static const QString sPluginVersion = QStringLiteral( "0.1" );
 static const QgisPlugin::PluginType sPluginType = QgisPlugin::UI;
