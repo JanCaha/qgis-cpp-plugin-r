@@ -39,6 +39,7 @@ class RStatsRunner : public QObject
         void execCommand( const QString &command );
         bool busy() const;
         void showStartupMessage();
+        void emptyRMemory();
 
     signals:
 

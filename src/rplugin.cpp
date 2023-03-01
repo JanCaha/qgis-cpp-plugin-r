@@ -39,6 +39,7 @@ void RPlugin::initGui() { prepareForUse(); }
 
 void RPlugin::unload()
 {
+    mRStatsRunner->emptyRMemory();
     mIface->pluginMenu()->removeAction( mOpenConsole.get() );
     mOpenConsole.reset();
     mRConsole.reset();

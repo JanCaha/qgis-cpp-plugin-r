@@ -86,9 +86,14 @@ RStatsConsole::RStatsConsole( QWidget *parent, std::shared_ptr<RStatsRunner> run
 
                  if ( result == RSettingsDialog::Accepted )
                  {
-                     //  mRunner->execCommand( QStringLiteral( ".libPaths(\"%1\")" ).arg( dialog->rLibraryPath() ) );
+                     mRunner->execCommand( QStringLiteral( ".libPaths(\"%1\")" ).arg( dialog->rLibraryPath() ) );
                  }
              } );
+
+    mEmptyRMemory = new QAction( tr( "Empty R Memory" ), this );
+    toolBar->addAction( mEmptyRMemory );
+
+    connect( mEmptyRMemory, &QAction::triggered, this, [=]() { mRunner->emptyRMemory(); } );
 
     QVBoxLayout *vl = new QVBoxLayout();
     vl->setContentsMargins( 0, 0, 0, 0 );

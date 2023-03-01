@@ -37,6 +37,7 @@ class RStatsConsole : public QgsDockWidget
         QgsCodeEditorR *mOutput = nullptr;
         QAction *mReadRScript = nullptr;
         QAction *mSettings = nullptr;
+        QAction *mEmptyRMemory = nullptr;
 };
 
 #endif // QGSRSTATSCONSOLE_H

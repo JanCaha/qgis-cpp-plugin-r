@@ -450,3 +450,14 @@ void RStatsSession::ShowMessage( const char *message )
 }
 
 bool RStatsSession::has_ShowMessage() { return true; }
+
+void RStatsSession::emptyRMemory()
+{
+    QString error;
+    execCommandPrivate( QStringLiteral( "rm(list = ls())" ), error );
+
+    if ( !error.isEmpty() )
+    {
+        QgsDebugMsg( error );
+    }
+}

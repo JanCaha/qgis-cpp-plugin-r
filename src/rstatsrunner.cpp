@@ -56,3 +56,5 @@ void RStatsRunner::showStartupMessage()
 {
     QMetaObject::invokeMethod( mSession.get(), "showStartupMessage", Qt::QueuedConnection );
 }
+
+void RStatsRunner::emptyRMemory() { mSession->emptyRMemory(); }

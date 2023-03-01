@@ -65,6 +65,8 @@ class RStatsSession : public QObject, public Callbacks
          */
         static SEXP variantToSexp( const QVariant &variant );
 
+        void emptyRMemory();
+
     public slots:
 
         void execCommand( const QString &command );
