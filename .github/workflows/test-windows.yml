@@ -1,0 +1,23 @@
+name: Build Win
+
+on:
+  push
+
+jobs:
+  build_on_windows:
+    runs-on: windows-2022
+  
+  - name: Checkout 
+    uses: actions/checkout@v3
+    with:
+      path: plugin
+  
+  - name: DIR
+    run: dir
+  
+  - name: Test R
+    run: Rscript -e "install.packages("Rcpp")"
+
+  - name: Test cmake
+    run: cmake
+  
