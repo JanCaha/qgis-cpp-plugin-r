@@ -25,12 +25,13 @@ jobs:
         run: curl https://download.osgeo.org/osgeo4w/v2/osgeo4w-setup.exe --output osgeo4w-setup.exe 
 
       - name: DIR
+        shell: bash
         run: dir
 
       - name: Install OSGeo4W
         shell: bash
         run: |
-          osgeo4w-setup.exe -N -d -k -D -P qgis-dev
+          ./osgeo4w-setup.exe -N -d -k -D -P qgis-dev
 
       - name: Setup R
         uses: r-lib/actions/setup-r@v2
