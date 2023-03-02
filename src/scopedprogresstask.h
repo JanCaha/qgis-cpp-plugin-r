@@ -22,5 +22,5 @@ class ScopedProgressTask
         bool isCanceled() const;
 
     private:
-        ProxyProgressTask *mTask = nullptr;
+        std::unique_ptr<ProxyProgressTask> mTask = nullptr;
 };
