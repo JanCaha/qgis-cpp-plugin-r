@@ -9,6 +9,10 @@ jobs:
 
     runs-on: windows-2022
 
+    defaults:
+      run:
+        shell: bash
+
     steps:
       - name: Checkout 
         uses: actions/checkout@v3
@@ -18,7 +22,10 @@ jobs:
       
       - name: Download OSGeo4W
         shell: bash
-        run: curl https://download.osgeo.org/osgeo4w/v2/osgeo4w-setup.exe
+        run: curl https://download.osgeo.org/osgeo4w/v2/osgeo4w-setup.exe --output osgeo4w-setup.exe 
+
+      - name: DIR
+        run: dir
 
       - name: Install OSGeo4W
         shell: bash
