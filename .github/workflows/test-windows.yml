@@ -22,3 +22,5 @@ jobs:
       - name: Test cmake
         run: cmake
       
+      - name: CMake Configure
+        run: cmake -S . -B build
