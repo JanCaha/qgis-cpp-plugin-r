@@ -13,7 +13,7 @@ MapLayerWrapper::MapLayerWrapper( const QgsMapLayer *layer ) : mLayerId( layer ?
 
 std::string MapLayerWrapper::id() const { return mLayerId.toStdString(); }
 
-QgsMapLayer *MapLayerWrapper::mapLayer() { return QgsProject::instance()->mapLayer( mLayerId ); }
+QgsMapLayer *MapLayerWrapper::mapLayer() const { return QgsProject::instance()->mapLayer( mLayerId ); }
 
 long long MapLayerWrapper::featureCount() const
 {
@@ -23,7 +23,7 @@ long long MapLayerWrapper::featureCount() const
         Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "featureCount",
                     "featureCount must be run on the main thread" );
 
-        if ( QgsMapLayer *layer = QgsProject::instance()->mapLayer( mLayerId ) )
+        if ( QgsMapLayer *layer = mapLayer() )
         {
             if ( QgsVectorLayer *vl = qobject_cast<QgsVectorLayer *>( layer ) )
             {

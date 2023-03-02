@@ -37,7 +37,7 @@ class MapLayerWrapper
         QString mLayerId;
 
         SEXP toRasterDataObject( RasterPackage rasterPackage );
-        QgsMapLayer *mapLayer();
+        QgsMapLayer *mapLayer() const;
 };
 
 #endif
