@@ -16,6 +16,9 @@ jobs:
       - name: DIR
         run: dir
       
+      - name: R CppFlags
+        run: R CMD config --cppflags
+
       - name: Test R
         run: Rscript -e "install.packages("Rcpp")"
 
