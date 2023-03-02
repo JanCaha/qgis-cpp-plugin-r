@@ -13,41 +13,41 @@ jobs:
       run:
         shell: bash
 
-    steps:
-      - name: Checkout 
-        uses: actions/checkout@v3
+    # steps:
+    #   - name: Checkout 
+    #     uses: actions/checkout@v3
       
-      - name: DIR
-        run: dir
+    #   - name: DIR
+    #     run: dir
       
-      - name: Download OSGeo4W
-        shell: bash
-        run: curl https://download.osgeo.org/osgeo4w/v2/osgeo4w-setup.exe --output osgeo4w-setup.exe 
+    #   - name: Download OSGeo4W
+    #     shell: bash
+    #     run: curl https://download.osgeo.org/osgeo4w/v2/osgeo4w-setup.exe --output osgeo4w-setup.exe 
 
-      - name: DIR
-        shell: bash
-        run: dir
+    #   - name: DIR
+    #     shell: bash
+    #     run: dir
 
-      - name: Install OSGeo4W
-        shell: bash
-        run: |
-          ./osgeo4w-setup.exe -N -d -k -D -P qgis-dev
+    #   - name: Install OSGeo4W
+    #     shell: bash
+    #     run: |
+    #       ./osgeo4w-setup.exe -N -d -k -D -P qgis-dev
 
-      - name: Setup R
-        uses: r-lib/actions/setup-r@v2
+    #   - name: Setup R
+    #     uses: r-lib/actions/setup-r@v2
 
-      - name: R CppFlags
-        shell: bash
-        run: R CMD config --cppflags
+    #   - name: R CppFlags
+    #     shell: bash
+    #     run: R CMD config --cppflags
 
-      - name: Test R
-        shell: bash
-        run: Rscript -e "install.packages("Rcpp")"
+    #   - name: Test R
+    #     shell: bash
+    #     run: Rscript -e "install.packages("Rcpp")"
 
-      - name: Test cmake
-        shell: bash
-        run: cmake
+    #   - name: Test cmake
+    #     shell: bash
+    #     run: cmake
       
-      - name: CMake Configure
-        shell: bash
-        run: cmake -S . -B build
+    #   - name: CMake Configure
+    #     shell: bash
+    #     run: cmake -S . -B build
