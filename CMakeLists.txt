@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(
   QgisPluginR
-  VERSION 0.1
+  VERSION 0.2
   DESCRIPTION "Cpp plugin that allows running R from within QGIS"
   LANGUAGES CXX)
 

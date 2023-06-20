@@ -68,6 +68,8 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "variant": "cpp",
-        "qdockwidget": "cpp"
+        "qdockwidget": "cpp",
+        "qfiledialog": "cpp",
+        "qtextstream": "cpp"
     },
 }

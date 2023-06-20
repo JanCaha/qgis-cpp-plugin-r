@@ -13,45 +13,35 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <QDialog>
-#include <QDialogButtonBox>
-#include <QDir>
+#include "qgsrstatsconsole.h"
+#include "qgsapplication.h"
+#include "qgscodeeditor.h"
+#include "qgscodeeditorr.h"
+#include "qgsdockablewidgethelper.h"
+#include "qgsrstatsrunner.h"
+
 #include <QFileDialog>
-#include <QFormLayout>
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QPushButton>
-#include <QSettings>
 #include <QSplitter>
 #include <QTextBrowser>
 #include <QTextStream>
 #include <QToolBar>
 #include <QVBoxLayout>
-#include <QWidget>
 
-#include "qgscodeeditorr.h"
-#include "qgsdockwidgetplugin.h"
-
-#include "../rstatsrunner.h"
-#include "rsettingsdialog.h"
-#include "rstatsconsole.h"
-
-RStatsConsole::RStatsConsole( QWidget *parent, std::shared_ptr<RStatsRunner> runner,
-                              std::shared_ptr<QgisInterface> iface )
-    : QgsDockWidget( parent ), mRunner( runner )
+QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, QgsRStatsRunner *runner, std::shared_ptr<QgisInterface> iface )
+    : QWidget( parent ), mRunner( runner ), mIface( iface )
 {
-    setWindowTitle( QString( "R Console" ) );
-    setObjectName( QString( "R Console" ) );
-    setWindowFlags( Qt::WindowType::Window );
-
-    iface->addDockWidget( Qt::DockWidgetArea::BottomDockWidgetArea, this );
-
     QToolBar *toolBar = new QToolBar( this );
-    toolBar->setIconSize( iface->iconSize( true ) );
+    toolBar->setIconSize( mIface->iconSize( true ) );
 
-    // QToolButton *toggleButton = mDockableWidgetHelper->createDockUndockToolButton();
-    // toggleButton->setToolTip( tr( "Dock R Stats Console" ) );
-    // toolBar->addWidget( toggleButton );
+    mDockableWidgetHelper = new QgsDockableWidgetHelper( true, tr( "R Stats Console" ), this, nullptr,
+                                                         Qt::BottomDockWidgetArea, QStringList(), true );
+    mDockableWidgetHelper->setDockObjectName( QStringLiteral( "RStatsConsole" ) );
+    QToolButton *toggleButton = mDockableWidgetHelper->createDockUndockToolButton();
+    toggleButton->setToolTip( tr( "Dock R Stats Console" ) );
+    toolBar->addWidget( toggleButton );
 
     mReadRScript = new QAction( QgsApplication::getThemeIcon( QStringLiteral( "/mActionFileOpen.svg" ) ),
                                 tr( "Run Script" ), this );
@@ -75,24 +65,9 @@ RStatsConsole::RStatsConsole( QWidget *parent, std::shared_ptr<RStatsRunner> run
                  }
              } );
 
-    mSettings = new QAction( "Settings", this );
-    toolBar->addAction( mSettings );
-
-    connect( mSettings, &QAction::triggered, this,
-             [=]()
-             {
-                 RSettingsDialog *dialog = new RSettingsDialog( this );
-                 int result = dialog->exec();
-
-                 if ( result == RSettingsDialog::Accepted )
-                 {
-                     mRunner->execCommand( QStringLiteral( ".libPaths(\"%1\")" ).arg( dialog->rLibraryPath() ) );
-                 }
-             } );
-
     mEmptyRMemory = new QAction( tr( "Empty R Memory" ), this );
+    mEmptyRMemory->setIcon( QgsApplication::getThemeIcon( QStringLiteral( "console/iconClearConsole.svg" ) ) );
     toolBar->addAction( mEmptyRMemory );
-
     connect( mEmptyRMemory, &QAction::triggered, this, [=]() { mRunner->emptyRMemory(); } );
 
     QVBoxLayout *vl = new QVBoxLayout();
@@ -106,18 +81,13 @@ RStatsConsole::RStatsConsole( QWidget *parent, std::shared_ptr<RStatsRunner> run
 
     mOutput = new QgsCodeEditorR( nullptr, QgsCodeEditor::Mode::OutputDisplay );
     splitter->addWidget( mOutput );
-    mInputEdit = new InteractiveRWidget();
+    mInputEdit = new QgsInteractiveRWidget();
     mInputEdit->setFont( QgsCodeEditor::getMonospaceFont() );
     splitter->addWidget( mInputEdit );
 
     vl->addWidget( splitter );
 
-    QWidget *w = new QWidget( this );
-    w->setLayout( vl );
-
-    setWidget( w );
-
-    connect( mInputEdit, &InteractiveRWidget::runCommand, this,
+    connect( mInputEdit, &QgsInteractiveRWidget::runCommand, this,
              [=]( const QString &command )
              {
                  if ( mRunner->busy() )
@@ -130,14 +100,14 @@ RStatsConsole::RStatsConsole( QWidget *parent, std::shared_ptr<RStatsRunner> run
                  mRunner->execCommand( command );
              } );
 
-    connect( mRunner.get(), &RStatsRunner::errorOccurred, this,
+    connect( mRunner, &QgsRStatsRunner::errorOccurred, this,
              [=]( const QString &error )
              {
                  mOutput->append( ( mOutput->text().isEmpty() ? QString() : QString( '\n' ) ) + error );
                  mOutput->moveCursorToEnd();
              } );
 
-    connect( mRunner.get(), &RStatsRunner::consoleMessage, this,
+    connect( mRunner, &QgsRStatsRunner::consoleMessage, this,
              [=]( const QString &message, int type )
              {
                  if ( type == 0 )
@@ -147,22 +117,73 @@ RStatsConsole::RStatsConsole( QWidget *parent, std::shared_ptr<RStatsRunner> run
                  mOutput->moveCursorToEnd();
              } );
 
-    connect( mRunner.get(), &RStatsRunner::showMessage, this,
+    connect( mRunner, &QgsRStatsRunner::showMessage, this,
              [=]( const QString &message )
              {
                  mOutput->append( ( mOutput->text().isEmpty() ? QString() : QString( '\n' ) ) + message );
                  mOutput->moveCursorToEnd();
              } );
 
-    connect( mRunner.get(), &RStatsRunner::busyChanged, this,
+    connect( mRunner, &QgsRStatsRunner::busyChanged, this,
              [=]( bool busy )
              {
+                 Q_UNUSED( busy );
                  // mInputEdit->setEnabled( !busy );
              } );
 
-    // setLayout( vl );
+    setLayout( vl );
 
     mRunner->showStartupMessage();
+    mRunner->setLibraryPath();
 }
 
-RStatsConsole::~RStatsConsole() {}
+QgsRStatsConsole::~QgsRStatsConsole() { delete mDockableWidgetHelper; }
+
+QgsInteractiveRWidget::QgsInteractiveRWidget( QWidget *parent )
+    : QgsCodeEditorR( parent, QgsCodeEditor::Mode::CommandInput )
+{
+    displayPrompt( false );
+
+    QgsInteractiveRWidget::initializeLexer();
+}
+
+void QgsInteractiveRWidget::clear()
+{
+    QgsCodeEditorR::clear();
+    displayPrompt( false );
+}
+
+void QgsInteractiveRWidget::keyPressEvent( QKeyEvent *event )
+{
+    switch ( event->key() )
+    {
+        case Qt::Key_Return:
+        case Qt::Key_Enter:
+            emit runCommand( text() );
+
+            break;
+
+        default:
+            QgsCodeEditorR::keyPressEvent( event );
+    }
+}
+
+void QgsInteractiveRWidget::initializeLexer()
+{
+    QgsCodeEditorR::initializeLexer();
+
+    setCaretLineVisible( false );
+    setLineNumbersVisible( false ); // NO linenumbers for the input line
+    // Margin 1 is used for the '>' prompt (console input)
+    setMarginLineNumbers( 1, true );
+    setMarginWidth( 1, "00" );
+    setMarginType( 1, QsciScintilla::MarginType::TextMarginRightJustified );
+    setMarginsBackgroundColor( color( QgsCodeEditorColorScheme::ColorRole::Background ) );
+    setEdgeMode( QsciScintilla::EdgeNone );
+}
+
+void QgsInteractiveRWidget::displayPrompt( bool more )
+{
+    const QString prompt = !more ? ">" : "+";
+    SendScintilla( QsciScintilla::SCI_MARGINSETTEXT, static_cast<uintptr_t>( 0 ), prompt.toUtf8().constData() );
+}

@@ -13,31 +13,57 @@
  *                                                                         *
  ***************************************************************************/
 
+
 #ifndef QGSRSTATSCONSOLE_H
 #define QGSRSTATSCONSOLE_H
 
 #include <QWidget>
 
-#include "qgisinterface.h"
 #include "qgscodeeditorr.h"
-#include "qgsdockwidget.h"
+#include "qgisinterface.h"
 
-#include "../rstatsrunner.h"
-#include "interactiverwidget.h"
+class QgsRStatsRunner;
+class QLineEdit;
+class QTextBrowser;
+class QgsDockableWidgetHelper;
 
-class RStatsConsole : public QgsDockWidget
+class QgsInteractiveRWidget : public QgsCodeEditorR
 {
-    public:
-        RStatsConsole( QWidget *parent, std::shared_ptr<RStatsRunner> runner, std::shared_ptr<QgisInterface> iface );
-        ~RStatsConsole() override;
+    Q_OBJECT
+  public:
 
-    private:
-        std::shared_ptr<RStatsRunner> mRunner = nullptr;
-        InteractiveRWidget *mInputEdit = nullptr;
-        QgsCodeEditorR *mOutput = nullptr;
-        QAction *mReadRScript = nullptr;
-        QAction *mSettings = nullptr;
-        QAction *mEmptyRMemory = nullptr;
+    QgsInteractiveRWidget( QWidget *parent = nullptr );
+
+    void clear() override;
+
+  signals:
+
+    void runCommand( const QString &command );
+
+  protected:
+
+    void keyPressEvent( QKeyEvent *event ) override;
+
+    void initializeLexer() override;
+    void displayPrompt( bool more = false );
+
+};
+
+class QgsRStatsConsole: public QWidget
+{
+  public:
+    QgsRStatsConsole( QWidget *parent, QgsRStatsRunner *runner, std::shared_ptr<QgisInterface> iface);
+    ~QgsRStatsConsole() override;
+
+  private:
+
+    QgsRStatsRunner *mRunner = nullptr;
+    QgsInteractiveRWidget *mInputEdit = nullptr;
+    QgsCodeEditorR *mOutput = nullptr;
+    QgsDockableWidgetHelper *mDockableWidgetHelper = nullptr;
+    QAction *mReadRScript = nullptr;
+    QAction *mEmptyRMemory = nullptr;
+    std::shared_ptr<QgisInterface> mIface = nullptr;
 };
 
 #endif // QGSRSTATSCONSOLE_H

@@ -13,6 +13,7 @@
  *                                                                         *
  ***************************************************************************/
 
+
 #ifndef QGSRSTATSRUNNER_H
 #define QGSRSTATSRUNNER_H
 
@@ -20,39 +21,42 @@
 
 #include <QObject>
 #include <QThread>
+#include "Callbacks.h"
 
+#include "qgsrstatssession.h"
 #include "qgisinterface.h"
-#include "qgsapplication.h"
 
-#include "rstatsession.h"
-
+class RInside;
 class QVariant;
 class QString;
 
-class RStatsRunner : public QObject
+class QgsRStatsRunner: public QObject
 {
-        Q_OBJECT
-    public:
-        RStatsRunner( std::shared_ptr<QgisInterface> iface );
-        ~RStatsRunner();
+    Q_OBJECT
+  public:
 
-        void execCommand( const QString &command );
-        bool busy() const;
-        void showStartupMessage();
-        void emptyRMemory();
+    QgsRStatsRunner(std::shared_ptr<QgisInterface> iface);
+    ~QgsRStatsRunner();
 
-    signals:
+    void execCommand( const QString &command );
+    bool busy() const;
+    void showStartupMessage();
+    void setLibraryPath();
+    void emptyRMemory();
 
-        void consoleMessage( const QString &message, int type );
-        void showMessage( const QString &message );
-        void errorOccurred( const QString &error );
-        void busyChanged( bool busy );
-        void commandFinished( const QVariant &result );
+  signals:
 
-    private:
-        QThread mSessionThread;
-        std::unique_ptr<RStatsSession> mSession;
-        std::shared_ptr<QgisInterface> mIface;
+    void consoleMessage( const QString &message, int type );
+    void showMessage( const QString &message );
+    void errorOccurred( const QString &error );
+    void busyChanged( bool busy );
+    void commandFinished( const QVariant &result );
+
+  private:
+
+    QThread mSessionThread;
+    std::unique_ptr<QgsRStatsSession> mSession;
+    std::shared_ptr<QgisInterface> mIface;
 };
 
 #endif // QGSRSTATSRUNNER_H
