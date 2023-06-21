@@ -1,5 +1,5 @@
 /***************************************************************************
-                             qgsrstatsrunner.h
+                             qgsrstatsconsole.h
                              --------------
     begin                : September 2022
     copyright            : (C) 2022 Nyall Dawson
@@ -13,46 +13,33 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef QGSRSTATSRUNNER_H
-#define QGSRSTATSRUNNER_H
+#ifndef QGSRSTATSCONSOLE_H
+#define QGSRSTATSCONSOLE_H
 
-#include <memory>
-
-#include <QObject>
-#include <QThread>
+#include <QWidget>
 
 #include "qgisinterface.h"
-#include "qgsapplication.h"
+#include "qgsdockwidget.h"
 
-#include "rstatsession.h"
+class QgsInteractiveRWidget;
+class QgsRStatsRunner;
+class QLineEdit;
+class QTextBrowser;
+class QgsCodeEditorR;
 
-class QVariant;
-class QString;
-
-class RStatsRunner : public QObject
+class QgsRStatsConsole : public QgsDockWidget
 {
-        Q_OBJECT
     public:
-        RStatsRunner( std::shared_ptr<QgisInterface> iface );
-        ~RStatsRunner();
-
-        void execCommand( const QString &command );
-        bool busy() const;
-        void showStartupMessage();
-        void emptyRMemory();
-
-    signals:
-
-        void consoleMessage( const QString &message, int type );
-        void showMessage( const QString &message );
-        void errorOccurred( const QString &error );
-        void busyChanged( bool busy );
-        void commandFinished( const QVariant &result );
+        QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRunner> runner, std::shared_ptr<QgisInterface> iface );
+        ~QgsRStatsConsole() override;
 
     private:
-        QThread mSessionThread;
-        std::unique_ptr<RStatsSession> mSession;
+        std::shared_ptr<QgsRStatsRunner> mRunner = nullptr;
+        QgsInteractiveRWidget *mInputEdit = nullptr;
+        QgsCodeEditorR *mOutput = nullptr;
+        QAction *mReadRScript = nullptr;
+        QAction *mEmptyRMemory = nullptr;
         std::shared_ptr<QgisInterface> mIface;
 };
 
-#endif // QGSRSTATSRUNNER_H
+#endif // QGSRSTATSCONSOLE_H

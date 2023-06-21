@@ -8,8 +8,8 @@
 #include "qgisinterface.h"
 #include "qgisplugin.h"
 
-#include "gui/rstatsconsole.h"
-#include "rstatsrunner.h"
+#include "qgsrstatsconsole.h"
+#include "qgsrstatsrunner.h"
 
 class RPlugin : public QObject, public QgisPlugin
 {
@@ -24,9 +24,10 @@ class RPlugin : public QObject, public QgisPlugin
 
     private:
         std::shared_ptr<QgisInterface> mIface = nullptr;
-        std::shared_ptr<RStatsRunner> mRStatsRunner = nullptr;
-        std::shared_ptr<RStatsConsole> mRConsole = nullptr;
+        std::shared_ptr<QgsRStatsRunner> mRStatsRunner = nullptr;
+        std::shared_ptr<QgsRStatsConsole> mRConsole = nullptr;
         std::shared_ptr<QAction> mOpenConsole = nullptr;
+        std::shared_ptr<QgsRStatsSettingsOptionsFactory> mRSettingsFactory = nullptr;
 };
 
 static const QString sName = QStringLiteral( "R Console Plugin" );

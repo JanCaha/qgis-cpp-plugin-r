@@ -13,83 +13,48 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef RSTATSSESSION_H
-#define RSTATSSESSION_H
+#ifndef QGSRSTATSRUNNER_H
+#define QGSRSTATSRUNNER_H
 
 #include <memory>
 
 #include "Callbacks.h"
-#include "RInside.h"
-
 #include <QObject>
 #include <QThread>
 
 #include "qgisinterface.h"
-#include "qgsapplication.h"
+
+#include "qgsrstatssession.h"
 
 class RInside;
 class QVariant;
 class QString;
 
-class RStatsSession : public QObject, public Callbacks
+class QgsRStatsRunner : public QObject
 {
         Q_OBJECT
     public:
-        RStatsSession( std::shared_ptr<QgisInterface> iface );
-        ~RStatsSession() override;
-
-        bool busy() const { return mBusy; }
-
-        void execCommandNR( const QString &command );
-
-        void WriteConsole( const std::string &line, int type ) override;
-
-        bool has_WriteConsole() override;
-
-        void ShowMessage( const char *message ) override;
-
-        bool has_ShowMessage() override;
-
-        /**
-         * Converts a SEXP object to a string.
-         */
-        static QString sexpToString( const SEXP exp );
-
-        /**
-         * Converts a SEXP object to a QVariant.
-         */
-        static QVariant sexpToVariant( const SEXP exp );
-
-        /**
-         * Converts a variant to a SEXP.
-         */
-        static SEXP variantToSexp( const QVariant &variant );
-
-        void emptyRMemory();
-
-    public slots:
+        QgsRStatsRunner( std::shared_ptr<QgisInterface> iface );
+        ~QgsRStatsRunner();
 
         void execCommand( const QString &command );
-
+        bool busy() const;
         void showStartupMessage();
+        void setLibraryPath();
+        void emptyRMemory();
 
     signals:
-
-        void busyChanged( bool busy );
 
         void consoleMessage( const QString &message, int type );
         void showMessage( const QString &message );
         void errorOccurred( const QString &error );
+        void busyChanged( bool busy );
         void commandFinished( const QVariant &result );
 
     private:
-        RInside *mRSession = RInside::instancePtr();
-        bool mBusy = false;
-        bool mEncounteredErrorMessageType = false;
+        QThread mSessionThread;
+        std::unique_ptr<QgsRStatsSession> mSession;
         std::shared_ptr<QgisInterface> mIface;
-
-        void execCommandPrivate( const QString &command, QString &error, QVariant *res = nullptr,
-                                 QString *output = nullptr );
 };
 
-#endif
+#endif // QGSRSTATSRUNNER_H

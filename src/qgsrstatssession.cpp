@@ -1,75 +1,67 @@
-#include <QDir>
-#include <QSettings>
-#include <QString>
+#include "qgsrstatssession.h"
 
-#include "qgsvariantutils.h"
+#include <RInside.h>
 
-#include "qgisapplicationrwrapper.h"
-#include "rinteractingfunctions.h"
-#include "rstatsession.h"
+#include "qgsapplication.h"
+#include "qgsrstatsapplicationwrapper.h"
+#include "qgsrstatsfunctions.h"
+#include "qgssettings.h"
 
-RStatsSession::RStatsSession( std::shared_ptr<QgisInterface> iface ) : mIface( iface )
+QgsRStatsSession::QgsRStatsSession( std::shared_ptr<QgisInterface> iface ) : mIface( iface )
 {
+    QgsSettings settings;
+    mVerboseR = settings.value( QStringLiteral( "RStats/VerboseR" ), false ).toBool();
 
     try
     {
-        mRSession = new RInside( 0, nullptr, true, false, true );
+        mRSession = std::make_unique<RInside>( 0, nullptr, true, mVerboseR, true );
     }
     catch ( const std::exception &e )
     {
-        mRSession = RInside::instancePtr();
+        mRSession.reset(RInside::instancePtr());
     }
 
     mRSession->set_callbacks( this );
 
-    const QString userPath =
-        QSettings()
-            .value( QStringLiteral( "RStats/libraryPath" ),
-                    QVariant( QgsApplication::qgisSettingsDirPath() + QStringLiteral( "r_libs" ) ) )
-            .toString();
+    prepareQgisApplicationWrapper();
+    prepareConvertFunctions();
+}
 
-    if ( !QFile::exists( userPath ) )
+void QgsRStatsSession::prepareQgisApplicationWrapper()
+{
+    mRSession->assign( QgsRstatsApplicationWrapper::instance( mIface ), "QGIS" );
+}
+
+void QgsRStatsSession::prepareConvertFunctions()
+{
+    mRSession->assign( Rcpp::InternalFunction( &QgRstatsFunctions::Dollar ), "$.QGIS" );
+    mRSession->assign( Rcpp::InternalFunction( &QgsRstatsApplicationWrapper::functions ), "names.QGIS" );
+    mRSession->assign( Rcpp::InternalFunction( &QgRstatsFunctions::printApplicationWrapper ), "print.QGIS" );
+
+    mRSession->assign( Rcpp::InternalFunction( &QgRstatsFunctions::DollarMapLayer ),
+                       QgsRstatsMapLayerWrapper::s3FunctionForClass( "$" ) );
+    mRSession->assign( Rcpp::InternalFunction( &QgsRstatsMapLayerWrapper::functions ),
+                       QgsRstatsMapLayerWrapper::s3FunctionForClass( "names" ) );
+    mRSession->assign( Rcpp::InternalFunction( &QgRstatsFunctions::asDataFrame ),
+                       QgsRstatsMapLayerWrapper::s3FunctionForClass( "as.data.frame" ) );
+    mRSession->assign( Rcpp::InternalFunction( &QgRstatsFunctions::printMapLayerWrapper ),
+                       QgsRstatsMapLayerWrapper::s3FunctionForClass( "print" ) );
+}
+
+void QgsRStatsSession::setLibraryPath()
+{
+    QgsSettings settings;
+    QString rLibPath = settings.value( QStringLiteral( "RStats/LibraryPath" ), "" ).toString();
+
+    if ( !rLibPath.isEmpty() )
     {
-        QDir().mkpath( userPath );
-    }
-    execCommandNR( QStringLiteral( ".libPaths(\"%1\")" ).arg( userPath ) );
-
-    Rcpp::XPtr<QgisApplicationRWrapper> wr( new QgisApplicationRWrapper( mIface ) );
-    wr.attr( "class" ) = ".QGISPrivate";
-    mRSession->assign( wr, ".QGISPrivate" );
-    mRSession->assign( Rcpp::InternalFunction( &Dollar ), "$..QGISPrivate" );
-
-    QString error;
-    execCommandPrivate( QStringLiteral( R"""(
-  QGIS <- list(
-    versionInt=function() { .QGISPrivate$versionInt },
-    mapLayerByName=function(name) { .QGISPrivate$mapLayerByName(name) },
-    activeLayer=function() { .QGISPrivate$activeLayer },
-    toDataFrame=function(layer, selectedOnly=FALSE) { .QGISPrivate$toDataFrame(layer, selectedOnly) },
-    toNumericVector=function(layer, field, selectedOnly=FALSE) { .QGISPrivate$toNumericVector(layer, field, selectedOnly) },
-    toSf=function(layer) { .QGISPrivate$toSf(layer) },
-    toRaster=function(layer) {.QGISPrivate$toRaster(layer)},
-    toTerra=function(layer) {.QGISPrivate$toTerra(layer)},
-    toStars=function(layer) {.QGISPrivate$toStars(layer)},
-    isVectorLayer=function(layer) { .QGISPrivate$isVectorLayer(layer) },
-    isRasterLayer=function(layer) { .QGISPrivate$isRasterLayer(layer) },
-    dfToQGIS=function(df) { .QGISPrivate$dfToQGIS(df) },
-    layerId=function(layer){ .QGISPrivate$layerId(layer) },
-    featureCount=function(layer){ .QGISPrivate$featureCount(layer) }
-  )
-  class(QGIS) <- "QGIS"
-  )""" ),
-                        error );
-
-    if ( !error.isEmpty() )
-    {
-        QgsDebugMsg( error );
+        QString command = QStringLiteral( ".libPaths(\"%1\")" ).arg( rLibPath );
+        emit showMessage( command );
+        execCommand( command );
     }
 }
 
-RStatsSession::~RStatsSession() = default;
-
-void RStatsSession::showStartupMessage()
+void QgsRStatsSession::showStartupMessage()
 {
     QVariant versionString;
     QString error;
@@ -106,7 +98,9 @@ void RStatsSession::showStartupMessage()
     emit showMessage( QString() );
 }
 
-QString RStatsSession::sexpToString( const SEXP exp )
+QgsRStatsSession::~QgsRStatsSession() = default;
+
+QString QgsRStatsSession::sexpToString( const SEXP exp )
 {
     switch ( TYPEOF( exp ) )
     {
@@ -155,7 +149,7 @@ QString RStatsSession::sexpToString( const SEXP exp )
     return QString::fromStdString( outcome );
 }
 
-QVariant RStatsSession::sexpToVariant( const SEXP exp )
+QVariant QgsRStatsSession::sexpToVariant( const SEXP exp )
 {
     switch ( TYPEOF( exp ) )
     {
@@ -181,6 +175,7 @@ QVariant RStatsSession::sexpToVariant( const SEXP exp )
         case STRSXP:
         case CHARSXP:
         case EXPRSXP:
+        case VECSXP:
             break;
 
         default:
@@ -313,6 +308,7 @@ QVariant RStatsSession::sexpToVariant( const SEXP exp )
         case CLOSXP:
         case ENVSXP:
         case PROMSXP:
+        case VECSXP: // data.frame - could be converted to QgsVectorLayer, but would it be helpfull ???
             // unreachable, handled earlier
             return QVariant();
 
@@ -324,7 +320,7 @@ QVariant RStatsSession::sexpToVariant( const SEXP exp )
     return QVariant();
 }
 
-SEXP RStatsSession::variantToSexp( const QVariant &variant )
+SEXP QgsRStatsSession::variantToSexp( const QVariant &variant )
 {
     switch ( variant.type() )
     {
@@ -364,15 +360,19 @@ SEXP RStatsSession::variantToSexp( const QVariant &variant )
     }
 }
 
-void RStatsSession::execCommandPrivate( const QString &command, QString &error, QVariant *res, QString *output )
+void QgsRStatsSession::execCommandPrivate( const QString &command, QString &error, QVariant *res, QString *output )
 {
     try
     {
         const SEXP sexpRes = mRSession->parseEval( command.toStdString() );
-        if ( res )
-            *res = sexpToVariant( sexpRes );
-        if ( output )
-            *output = sexpToString( sexpRes );
+
+        if ( mRSession->parseComplete() )
+        {
+            if ( res )
+                *res = sexpToVariant( sexpRes );
+            if ( output )
+                *output = sexpToString( sexpRes );
+        }
     }
     catch ( std::exception &ex )
     {
@@ -384,7 +384,7 @@ void RStatsSession::execCommandPrivate( const QString &command, QString &error, 
     }
 }
 
-void RStatsSession::execCommandNR( const QString &command )
+void QgsRStatsSession::execCommandNR( const QString &command )
 {
     if ( mBusy )
         return;
@@ -403,9 +403,15 @@ void RStatsSession::execCommandNR( const QString &command )
     emit busyChanged( false );
 }
 
-void RStatsSession::execCommand( const QString &command )
+void QgsRStatsSession::execCommand( const QString &command )
 {
     if ( mBusy )
+        return;
+
+    if ( command.isEmpty() )
+        return;
+
+    if ( mEmptyCommandCheck.exactMatch( command ) )
         return;
 
     mBusy = true;
@@ -423,8 +429,6 @@ void RStatsSession::execCommand( const QString &command )
     }
     else
     {
-        if ( !output.isEmpty() )
-            emit consoleMessage( output, 0 );
         emit commandFinished( res );
     }
 
@@ -432,7 +436,7 @@ void RStatsSession::execCommand( const QString &command )
     emit busyChanged( false );
 }
 
-void RStatsSession::WriteConsole( const std::string &line, int type )
+void QgsRStatsSession::WriteConsole( const std::string &line, int type )
 {
     if ( type > 0 )
         mEncounteredErrorMessageType = true;
@@ -441,17 +445,17 @@ void RStatsSession::WriteConsole( const std::string &line, int type )
     emit consoleMessage( message, type );
 }
 
-bool RStatsSession::has_WriteConsole() { return true; }
+bool QgsRStatsSession::has_WriteConsole() { return true; }
 
-void RStatsSession::ShowMessage( const char *message )
+void QgsRStatsSession::ShowMessage( const char *message )
 {
     const QString messageString( message );
     emit showMessage( messageString );
 }
 
-bool RStatsSession::has_ShowMessage() { return true; }
+bool QgsRStatsSession::has_ShowMessage() { return true; }
 
-void RStatsSession::emptyRMemory()
+void QgsRStatsSession::emptyRMemory()
 {
     QString error;
     execCommandPrivate( QStringLiteral( "rm(list = ls())" ), error );
@@ -460,4 +464,7 @@ void RStatsSession::emptyRMemory()
     {
         QgsDebugMsg( error );
     }
+
+    prepareQgisApplicationWrapper();
+    prepareConvertFunctions();
 }

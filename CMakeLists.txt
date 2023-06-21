@@ -8,23 +8,20 @@ project(
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
-  set(CMAKE_CXX_STANDARD 17)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
   set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
   # include(CTest)
 endif()
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS true)
-
 find_package(QGIS REQUIRED)
 find_package(Qt5 COMPONENTS Core Widgets Xml Gui REQUIRED)
-
-message(STATUS ${QGIS_INCLUDE_DIR})
 
 find_package(R REQUIRED)
 find_package(RCpp REQUIRED)
@@ -55,6 +52,7 @@ set(R_INSIDE
 
 set(R_INSIDE_INCLUDE
   ${CMAKE_SOURCE_DIR}/external/r_inside/inst/include
+  ${CMAKE_SOURCE_DIR}/external/cpp11/inst/include
 )
 
 # The compiled library code is here

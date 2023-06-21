@@ -15,15 +15,18 @@ set(LIBS
 # Files
 set(r_plugin_SRCS
   rplugin.cpp
-  maplayerwrapper.cpp
-  rstatsession.cpp
-  rstatsrunner.cpp
   scopedprogresstask.cpp
-  rinteractingfunctions.cpp
 
-  gui/rstatsconsole.cpp
-  gui/interactiverwidget.cpp
-  gui/rsettingsdialog.cpp
+  qgsrstatsapplicationwrapper.cpp
+  qgsrstatsfunctions.cpp
+  qgsrstatsmaplayerwrapper.cpp
+  qgsrstatsrunner.cpp
+  qgsrstatssession.cpp
+  qgsrstatsutils.cpp
+
+  qgsrstatsconsole.cpp
+  qgsinteractiverwidget.cpp
+  qgsrstatssettings.cpp
 )
 
 set(r_plugin_RCCS
@@ -32,20 +35,19 @@ set(r_plugin_RCCS
 
 SET(PUBLIC_HEADERS_FILES
   rplugin.h
-  maplayerwrapper.h
-  qgisapplicationrwrapper.h
-  rstatsrunner.h
-  rstatsession.h
   scopedprogresstask.h
-  rinteractingfunctions.h
 
-  gui/rstatsconsole.h
-  gui/interactiverwidget.h
-  gui/rsettingsdialog.h
+  qgsrstatsapplicationwrapper.h
+  qgsrstatsfunctions.h
+  qgsrstatsmaplayerwrapper.h
+  qgsrstatsrunner.h
+  qgsrstatssession.h
+  qgsrstatsutils.h
+
+  qgsrstatsconsole.h
+  qgsinteractiverwidget.h
+  qgsrstatssettings.h
 )
-
-# QT5_WRAP_CPP(PUBLIC_MOC_SRCS ${PUBLIC_MOC_HEADERS_FILES})
-# QT5_ADD_RESOURCES(r_plugin_RCCS_SRCS ${r_plugin_RCCS})
 
 # #######################################################
 # Build
@@ -71,14 +73,12 @@ target_include_directories(r_plugin PUBLIC
   ${R_INSIDE_INCLUDE}
 )
 
-# target_link_libraries(r_plugin_tests ${LIBS})
 include_directories(
   ${QGIS_INCLUDE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
   ${R_INCLUDE_DIR}
   ${RCpp_INCLUDE_DIR}
   ${R_INSIDE_INCLUDE}
-  ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 ADD_CUSTOM_COMMAND(

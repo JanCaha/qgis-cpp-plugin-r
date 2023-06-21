@@ -1,17 +1,13 @@
-#ifndef INTERACTIVERWIDGET_H
-#define INTERACTIVERWIDGET_H
-
-#include <QKeyEvent>
-#include <QString>
-#include <QWidget>
+#ifndef QGSRSTATSINTERACTIVERWIDGET_H
+#define QGSRSTATSINTERACTIVERWIDGET_H
 
 #include "qgscodeeditorr.h"
 
-class InteractiveRWidget : public QgsCodeEditorR
+class QgsInteractiveRWidget : public QgsCodeEditorR
 {
         Q_OBJECT
     public:
-        InteractiveRWidget( QWidget *parent = nullptr );
+        QgsInteractiveRWidget( QWidget *parent = nullptr );
 
         void clear() override;
 
@@ -26,4 +22,4 @@ class InteractiveRWidget : public QgsCodeEditorR
         void displayPrompt( bool more = false );
 };
 
-#endif
+#endif // QGSRSTATSINTERACTIVERWIDGET_H
