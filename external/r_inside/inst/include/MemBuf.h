@@ -31,4 +31,6 @@ public:
     void rewind();
     void add(const std::string& );
     inline const char* getBufPtr() { return buffer.c_str() ; };
+    inline int size(){ return buffer.size(); }
+    inline bool isEmpty() { return size() == 0; }
 };
