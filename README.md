@@ -17,7 +17,7 @@ The plugin needs to be compiled from source and the path to resulting library (i
 To compile the plugin following tools needs to be installed:
 
 - cmake
-- qgis (version 3.29 Nightly builds)
+- qgis (version 3.30)
 - qgis-dev (header files)
 - R (R CMD and RScript programs must be runnable)
 - Rcpp (R package)
@@ -32,3 +32,28 @@ cmake --build build --config Release --target all --
 ```
 
 The folder **plugin** then contains the file **libr_plugin.so** which needs to pointed from QGIS.
+
+## Specific R Functions in QGIS
+
+There is `QGIS` object with several variables and functions that help with interaction between **QGIS** and **R**.
+
+```R
+QGIS$version
+QGIS$activeLayer
+QGIS$mapLayers
+QGIS$mapLayerByName(layerName) # layerName is string variable
+QGIS$projectCrs
+QGIS$dfToLayer(df) # df is data.frame (or similar class), to be converted into QGIS layer
+```
+
+The functions `QGIS$activeLayer` and `QGIS$mapLayerByName(layerName)` return `QgsMapLayerWrapper` **R** object. This object again has some functions and variables bound to id.
+
+```R
+lyr$id
+lyr$featureCount
+lyr$toDataFrame(onlySelected) # onlySelected is boolean variable, creates data.frame with geometry (using sf package)
+lyr$toNumericVector(fieldName, onlySelected) # fieldname is string, onlySelected is boolean
+lyr$readAsSf() # reads layer as sf object based on source on disk
+lyr$isVectorLayer
+lyr$isRasterLayer
+```
