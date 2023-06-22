@@ -51,7 +51,7 @@ SEXP QgsRstatsMapLayerWrapper::featureCount() const
     return Rcpp::wrap( res );
 }
 
-Rcpp::DataFrame QgsRstatsMapLayerWrapper::asDataFrame( bool selectedOnly ) const
+Rcpp::DataFrame QgsRstatsMapLayerWrapper::toDataFrame( bool selectedOnly ) const
 {
     Rcpp::DataFrame result = Rcpp::DataFrame();
 

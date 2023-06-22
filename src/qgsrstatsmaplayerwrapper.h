@@ -24,7 +24,7 @@ class QgsRstatsMapLayerWrapper
 
     SEXP featureCount() const;
 
-    Rcpp::DataFrame asDataFrame( bool selectedOnly ) const;
+    Rcpp::DataFrame toDataFrame( bool selectedOnly ) const;
 
     Rcpp::NumericVector toNumericVector( const std::string &fieldName, bool selectedOnly );
 

@@ -42,7 +42,7 @@ void QgsRStatsSession::prepareConvertFunctions()
                        QgsRstatsMapLayerWrapper::s3FunctionForClass( "$" ) );
     mRSession->assign( Rcpp::InternalFunction( &QgsRstatsMapLayerWrapper::functions ),
                        QgsRstatsMapLayerWrapper::s3FunctionForClass( "names" ) );
-    mRSession->assign( Rcpp::InternalFunction( &QgRstatsFunctions::asDataFrame ),
+    mRSession->assign( Rcpp::InternalFunction( &QgRstatsFunctions::toDataFrame ),
                        QgsRstatsMapLayerWrapper::s3FunctionForClass( "as.data.frame" ) );
     mRSession->assign( Rcpp::InternalFunction( &QgRstatsFunctions::printMapLayerWrapper ),
                        QgsRstatsMapLayerWrapper::s3FunctionForClass( "print" ) );

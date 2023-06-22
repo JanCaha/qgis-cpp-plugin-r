@@ -27,9 +27,9 @@ SEXP QgRstatsFunctions::DollarMapLayer( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj
     {
         return obj->featureCount();
     }
-    else if ( name == "asDataFrame" )
+    else if ( name == "toDataFrame" )
     {
-        std::function<SEXP( bool )> func = std::bind( &asDataFrame, obj, std::placeholders::_1 );
+        std::function<SEXP( bool )> func = std::bind( &toDataFrame, obj, std::placeholders::_1 );
         return Rcpp::InternalFunction( func );
     }
     else if ( name == "readAsSf" )
@@ -188,9 +188,9 @@ SEXP QgRstatsFunctions::dfToLayer( SEXP data )
     return Rcpp::wrap( prepared );
 }
 
-SEXP QgRstatsFunctions::asDataFrame( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj, bool selectedOnly )
+SEXP QgRstatsFunctions::toDataFrame( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj, bool selectedOnly )
 {
-    return obj->asDataFrame( selectedOnly );
+    return obj->toDataFrame( selectedOnly );
 }
 
 SEXP QgRstatsFunctions::toNumericVector( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj, const std::string &field,
