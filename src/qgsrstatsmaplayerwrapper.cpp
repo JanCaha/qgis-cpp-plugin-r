@@ -1,6 +1,7 @@
 #include <Rcpp.h>
 #include <RcppCommon.h>
 
+#include <QApplication>
 #include <QString>
 #include <QThread>
 
@@ -9,9 +10,9 @@
 #include "qgsproviderregistry.h"
 #include "qgsvectorlayerfeatureiterator.h"
 
-#include "scopedprogresstask.h"
 #include "qgsrstatsmaplayerwrapper.h"
 #include "qgsrstatsutils.h"
+#include "scopedprogresstask.h"
 
 QgsRstatsMapLayerWrapper::QgsRstatsMapLayerWrapper( const QgsMapLayer *layer )
 {
@@ -474,7 +475,7 @@ Rcpp::CharacterVector QgsRstatsMapLayerWrapper::functions()
     Rcpp::CharacterVector ret;
     ret.push_back( "id" );
     ret.push_back( "featureCount" );
-    ret.push_back( "asDataFrame(onlySelected)" );
+    ret.push_back( "toDataFrame(onlySelected)" );
     ret.push_back( "toNumericVector(fieldName, onlySelected)" );
     ret.push_back( "readAsSf()" );
     return ret;

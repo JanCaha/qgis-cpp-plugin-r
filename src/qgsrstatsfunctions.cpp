@@ -1,5 +1,6 @@
 #include <functional>
 
+#include <QApplication>
 #include <QString>
 #include <QThread>
 #include <QVariant>
@@ -11,11 +12,11 @@
 #include "qgsproxyprogresstask.h"
 #include "qgsvectorlayer.h"
 
-#include "scopedprogresstask.h"
 #include "qgsrstatsapplicationwrapper.h"
 #include "qgsrstatsfunctions.h"
 #include "qgsrstatsmaplayerwrapper.h"
 #include "qgsrstatsutils.h"
+#include "scopedprogresstask.h"
 
 SEXP QgRstatsFunctions::DollarMapLayer( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj, std::string name )
 {
