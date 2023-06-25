@@ -1,4 +1,3 @@
-#include "qgsrstatssession.h"
 
 #include <RInside.h>
 
@@ -6,6 +5,8 @@
 #include "qgsrstatsapplicationwrapper.h"
 #include "qgsrstatsfunctions.h"
 #include "qgssettings.h"
+
+#include "qgsrstatssession.h"
 
 QgsRStatsSession::QgsRStatsSession( std::shared_ptr<QgisInterface> iface ) : mIface( iface )
 {
@@ -18,7 +19,7 @@ QgsRStatsSession::QgsRStatsSession( std::shared_ptr<QgisInterface> iface ) : mIf
     }
     catch ( const std::exception &e )
     {
-        mRSession.reset(RInside::instancePtr());
+        mRSession.reset( RInside::instancePtr() );
     }
 
     mRSession->set_callbacks( this );
@@ -132,7 +133,7 @@ QString QgsRStatsSession::sexpToString( const SEXP exp )
             return QStringLiteral( "NULL" );
 
         default:
-            QgsDebugMsg( QStringLiteral( "Possibly unsafe type: %1" ).arg( TYPEOF( exp ) ) );
+            // QgsDebugMsg( QStringLiteral( "Possibly unsafe type: %1" ).arg( TYPEOF( exp ) ) );
             break;
     }
 
@@ -179,8 +180,9 @@ QVariant QgsRStatsSession::sexpToVariant( const SEXP exp )
             break;
 
         default:
-            QgsDebugMsg( QStringLiteral( "Trying to convert potentially unsafe SEXP type %1 to variant... watch out!" )
-                             .arg( TYPEOF( exp ) ) );
+            // QgsDebugMsg( QStringLiteral( "Trying to convert potentially unsafe SEXP type %1 to variant... watch out!"
+            // )
+            //                  .arg( TYPEOF( exp ) ) );
             break;
     }
 
@@ -313,7 +315,7 @@ QVariant QgsRStatsSession::sexpToVariant( const SEXP exp )
             return QVariant();
 
         default:
-            QgsDebugMsg( QStringLiteral( "Unhandled type: %1" ).arg( TYPEOF( exp ) ) );
+            // QgsDebugMsg( QStringLiteral( "Unhandled type: %1" ).arg( TYPEOF( exp ) ) );
             return QVariant();
     }
 
@@ -349,13 +351,14 @@ SEXP QgsRStatsSession::variantToSexp( const QVariant &variant )
             return Rcpp::wrap( variant.toString().toStdString() );
 
         case QVariant::UserType:
-            QgsDebugMsg(
-                QStringLiteral( "unsupported user variant type %1" ).arg( QMetaType::typeName( variant.userType() ) ) );
+            // QgsDebugMsg(
+            //     QStringLiteral( "unsupported user variant type %1" ).arg( QMetaType::typeName( variant.userType() ) )
+            //     );
             return nullptr;
 
         default:
-            QgsDebugMsg(
-                QStringLiteral( "unsupported variant type %1" ).arg( QVariant::typeToName( variant.type() ) ) );
+            // QgsDebugMsg(
+            //     QStringLiteral( "unsupported variant type %1" ).arg( QVariant::typeToName( variant.type() ) ) );
             return nullptr;
     }
 }
@@ -462,7 +465,7 @@ void QgsRStatsSession::emptyRMemory()
 
     if ( !error.isEmpty() )
     {
-        QgsDebugMsg( error );
+        // QgsDebugMsg( error );
     }
 
     prepareQgisApplicationWrapper();

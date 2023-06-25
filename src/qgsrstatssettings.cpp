@@ -1,5 +1,3 @@
-#include "qgsrstatssettings.h"
-
 #include <QCheckBox>
 #include <QFormLayout>
 #include <QLabel>
@@ -11,6 +9,8 @@
 #include "qgsfilewidget.h"
 #include "qgsgui.h"
 #include "qgssettings.h"
+
+#include "qgsrstatssettings.h"
 
 //
 // QgsRStatsSettingsWidget
@@ -71,7 +71,7 @@ QgsRStatsSettingsOptionsFactory::QgsRStatsSettingsOptionsFactory()
 {
 }
 
-QIcon QgsRStatsSettingsOptionsFactory::icon() const { return QIcon( QStringLiteral( ":/rplugin/icons/R_logo.svg" ) ); }
+QIcon QgsRStatsSettingsOptionsFactory::icon() const { return QIcon( QStringLiteral( ":/rplugin/R_logo.svg" ) ); }
 
 QgsOptionsPageWidget *QgsRStatsSettingsOptionsFactory::createWidget( QWidget *parent ) const
 {
