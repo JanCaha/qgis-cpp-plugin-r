@@ -1,9 +1,8 @@
-#include <Rcpp.h>
-#include <RcppCommon.h>
-
-#include <QApplication>
 #include <QString>
 #include <QThread>
+
+#include <Rcpp.h>
+#include <RcppCommon.h>
 
 #include "qgsmaplayer.h"
 #include "qgsproject.h"
@@ -52,7 +51,7 @@ SEXP QgsRstatsMapLayerWrapper::featureCount() const
     return Rcpp::wrap( res );
 }
 
-Rcpp::DataFrame QgsRstatsMapLayerWrapper::toDataFrame( bool selectedOnly ) const
+Rcpp::DataFrame QgsRstatsMapLayerWrapper::toDataFrame( bool includeGeometry, bool selectedOnly ) const
 {
     Rcpp::DataFrame result = Rcpp::DataFrame();
 
@@ -62,9 +61,10 @@ Rcpp::DataFrame QgsRstatsMapLayerWrapper::toDataFrame( bool selectedOnly ) const
     std::unique_ptr<QgsVectorLayerFeatureSource> source;
     std::unique_ptr<ScopedProgressTask> task;
     QgsFeatureIds selectedFeatureIds;
+    QgsCoordinateReferenceSystem crs;
 
     auto prepareSourceFeatureCountOnMainThread =
-        [&prepared, &fields, &featureCount, &source, &task, selectedOnly, &selectedFeatureIds, this]
+        [&prepared, &fields, &featureCount, &source, &task, selectedOnly, &selectedFeatureIds, &crs, this]
     {
         Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "toDataFrame",
                     "toDataFrame must be run on the main thread" );
@@ -86,6 +86,7 @@ Rcpp::DataFrame QgsRstatsMapLayerWrapper::toDataFrame( bool selectedOnly ) const
                 {
                     featureCount = vlayer->featureCount();
                 }
+                crs = vlayer->crs();
             }
         }
 
@@ -126,12 +127,22 @@ Rcpp::DataFrame QgsRstatsMapLayerWrapper::toDataFrame( bool selectedOnly ) const
 
     QgsFeature feature;
     QgsFeatureRequest req;
-    req.setFlags( QgsFeatureRequest::NoGeometry );
     req.setSubsetOfAttributes( attributesToFetch );
+    if ( !includeGeometry )
+        req.setFlags( QgsFeatureRequest::NoGeometry );
     if ( selectedOnly )
         req.setFilterFids( selectedFeatureIds );
 
-    auto prepareFeaturesOnMainThread = [&source, &result, &req, &feature, &featureCount, &task]
+    Rcpp::List geoms;
+
+    if ( includeGeometry )
+    {
+        Rcpp::List geoms( featureCount );
+        geoms.attr( "class" ) = "WKB";
+    }
+
+    auto prepareFeaturesOnMainThread =
+        [&source, &result, &req, &feature, &featureCount, &geoms, &includeGeometry, &task]
     {
         Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "toDataFrame",
                     "toDataFrame must be run on the main thread" );
@@ -153,11 +164,23 @@ Rcpp::DataFrame QgsRstatsMapLayerWrapper::toDataFrame( bool selectedOnly ) const
                 break;
 
             QgsRstatsUtils::addFeatureToDf( feature, featureNumber, result );
+            if ( includeGeometry )
+                geoms[featureNumber] = QgsRstatsUtils::rawWkb( feature.geometry() );
+
             featureNumber++;
         }
     };
 
     QMetaObject::invokeMethod( qApp, prepareFeaturesOnMainThread, Qt::BlockingQueuedConnection );
+
+    if ( includeGeometry )
+    {
+        Rcpp::Function st_as_sfc( "st_as_sfc", Rcpp::Environment::namespace_env( "sf" ) );
+        SEXP geometryCol = st_as_sfc( geoms, Rcpp::Named( "crs" ) = QgsRstatsUtils::sfCrs( crs ) );
+
+        Rcpp::Function st_set_geometry( "st_set_geometry", Rcpp::Environment::namespace_env( "sf" ) );
+        result = st_set_geometry( result, geometryCol );
+    }
 
     return result;
 }
@@ -475,9 +498,11 @@ Rcpp::CharacterVector QgsRstatsMapLayerWrapper::functions()
     Rcpp::CharacterVector ret;
     ret.push_back( "id" );
     ret.push_back( "featureCount" );
-    ret.push_back( "toDataFrame(onlySelected)" );
+    ret.push_back( "toDataFrame(includeGeometries, onlySelected)" );
     ret.push_back( "toNumericVector(fieldName, onlySelected)" );
-    ret.push_back( "readAsSf()" );
+    ret.push_back( "readAsSf" );
+    ret.push_back( "toSf" );
+    ret.push_back( "tableToDf" );
     return ret;
 }
 
