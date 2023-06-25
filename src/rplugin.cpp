@@ -1,10 +1,10 @@
+#include <QFile>
+#include <QMenu>
+
 #include "qgisinterface.h"
 #include "qgsapplication.h"
 #include "qgslogger.h"
 #include "qgsprocessingregistry.h"
-
-#include <QFile>
-#include <QMenu>
 
 #include "qgsrstatssettings.h"
 #include "rplugin.h"

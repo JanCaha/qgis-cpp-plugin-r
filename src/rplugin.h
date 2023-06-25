@@ -36,6 +36,6 @@ static const QString sDescription =
 static const QString sCategory = QStringLiteral( "Vector" );
 static const QString sPluginVersion = QStringLiteral( "0.1" );
 static const QgisPlugin::PluginType sPluginType = QgisPlugin::UI;
-static const QString sPluginIcon = QStringLiteral( ":/rplugin/icons/R_logo.svg" );
+static const QString sPluginIcon = QStringLiteral( ":/rplugin/R_logo.svg" );
 
-#endif // CPPTOOLSPLUGIN_H
+#endif 
