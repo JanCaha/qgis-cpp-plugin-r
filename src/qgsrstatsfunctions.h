@@ -20,13 +20,14 @@ class QgRstatsFunctions
 
         static SEXP readAsSf( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj );
 
-        static SEXP toDataFrame( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj, bool selectedOnly );
+        static SEXP toDataFrame( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj, bool includeGeometry, bool selectedOnly );
         static SEXP toNumericVector( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj, const std::string &field,
                                      bool selectedOnly );
 
         static SEXP toRaster( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj );
         static SEXP toTerra( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj );
         static SEXP toStars( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj );
+
 };
 
 #endif // QGRSSTATSFUNCTIONS_H

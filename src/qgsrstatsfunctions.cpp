@@ -1,9 +1,10 @@
 #include <functional>
 
-#include <QApplication>
 #include <QString>
 #include <QThread>
 #include <QVariant>
+
+#include <Rcpp.h>
 
 #include "qgsfield.h"
 #include "qgsfields.h"
@@ -30,17 +31,25 @@ SEXP QgRstatsFunctions::DollarMapLayer( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj
     }
     else if ( name == "toDataFrame" )
     {
-        std::function<SEXP( bool )> func = std::bind( &toDataFrame, obj, std::placeholders::_1 );
+        std::function<SEXP( bool, bool )> func =
+            std::bind( &toDataFrame, obj, std::placeholders::_1, std::placeholders::_2 );
         return Rcpp::InternalFunction( func );
     }
     else if ( name == "readAsSf" )
     {
-        std::function<SEXP()> func = std::bind( &readAsSf, obj );
-        return Rcpp::InternalFunction( func );
+        return obj->readAsSf();
     }
     else if ( name == "isVectorLayer" )
     {
         return Rcpp::wrap( obj->isVectorLayer() );
+    }
+    else if ( name == "toSf" )
+    {
+        return Rcpp::wrap( obj->toDataFrame( true, false ) );
+    }
+    else if ( name == "tableToDf" )
+    {
+        return Rcpp::wrap( obj->toDataFrame( false, false ) );
     }
     else if ( name == "isRasterLayer" )
     {
@@ -57,8 +66,6 @@ SEXP QgRstatsFunctions::DollarMapLayer( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj
         return NULL;
     }
 }
-
-SEXP QgRstatsFunctions::readAsSf( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj ) { return obj->readAsSf(); }
 
 void QgRstatsFunctions::printApplicationWrapper()
 {
@@ -189,10 +196,14 @@ SEXP QgRstatsFunctions::dfToLayer( SEXP data )
     return Rcpp::wrap( prepared );
 }
 
-SEXP QgRstatsFunctions::toDataFrame( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj, bool selectedOnly )
+SEXP QgRstatsFunctions::toDataFrame( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj, bool includeGeometry, bool selectedOnly )
 {
-    return obj->toDataFrame( selectedOnly );
+    return obj->toDataFrame( includeGeometry, selectedOnly );
 }
+
+SEXP tableToDf( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj ) { return obj->toDataFrame( false, false ); }
+
+SEXP toSf( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj ) { return obj->toDataFrame( true, false ); }
 
 SEXP QgRstatsFunctions::toNumericVector( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj, const std::string &field,
                                          bool selectedOnly )
