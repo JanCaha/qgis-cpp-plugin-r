@@ -1,3 +1,6 @@
+#ifndef SCOPEDPROGRESSTASK_H
+#define SCOPEDPROGRESSTASK_H
+
 #include "qgsproxyprogresstask.h"
 #include "qgstaskmanager.h"
 
@@ -24,3 +27,5 @@ class ScopedProgressTask
     private:
         ProxyProgressTask *mTask = nullptr;
 };
+
+#endif
