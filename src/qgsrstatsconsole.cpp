@@ -27,13 +27,13 @@
 #include <QToolBar>
 #include <QVBoxLayout>
 
-
-#include "qgsrstatsrunner.h"
 #include "qgsinteractiverwidget.h"
 #include "qgsrstatsconsole.h"
+#include "qgsrstatsrunner.h"
 
-QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRunner> runner, std::shared_ptr<QgisInterface> iface )
-    : QgsDockWidget( parent ), mRunner( runner ), mIface(iface)
+QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRunner> runner,
+                                    std::shared_ptr<QgisInterface> iface )
+    : QgsDockWidget( parent ), mRunner( runner ), mIface( iface )
 {
     setWindowTitle( QString( "R Console" ) );
     setObjectName( QString( "R Console" ) );
@@ -69,7 +69,6 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
                      inputFile.close();
                  }
              } );
-
 
     mEmptyRMemory = new QAction( tr( "Empty R Memory" ), this );
     toolBar->addAction( mEmptyRMemory );
@@ -146,7 +145,10 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
     mRunner->showStartupMessage();
 }
 
-QgsRStatsConsole::~QgsRStatsConsole() { delete mInputEdit;
-delete mOutput;
-delete mReadRScript;
-delete mEmptyRMemory;}
+QgsRStatsConsole::~QgsRStatsConsole()
+{
+    delete mInputEdit;
+    delete mOutput;
+    delete mReadRScript;
+    delete mEmptyRMemory;
+}
