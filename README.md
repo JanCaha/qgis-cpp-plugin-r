@@ -51,9 +51,11 @@ The functions `QGIS$activeLayer` and `QGIS$mapLayerByName(layerName)` return `Qg
 ```R
 lyr$id
 lyr$featureCount
-lyr$toDataFrame(onlySelected) # onlySelected is boolean variable, creates data.frame with geometry (using sf package)
+lyr$toDataFrame(includeGeometries, onlySelected) # includeGeometries, onlySelected are boolean variables, creates data.frame optionally with geometry (using sf package)
 lyr$toNumericVector(fieldName, onlySelected) # fieldname is string, onlySelected is boolean
 lyr$readAsSf() # reads layer as sf object based on source on disk
 lyr$isVectorLayer
 lyr$isRasterLayer
+lyr$tableToDf # converts attribute table to R data.frame (only the table, no geometries)
+lyr$toSf # converts the layer into sf data.frame (with geometry column and crs set from the layer)
 ```
