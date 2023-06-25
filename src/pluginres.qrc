@@ -1,5 +1,5 @@
 <RCC>
     <qresource prefix="/rplugin">
-        <file>icons/R_logo.svg</file>
+        <file>R_logo.svg</file>
     </qresource>
 </RCC>
