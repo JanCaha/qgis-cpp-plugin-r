@@ -18,9 +18,10 @@
 
 #include <memory>
 
-#include "Callbacks.h"
 #include <QObject>
 #include <QThread>
+
+#include "Callbacks.h"
 
 #include "qgisinterface.h"
 

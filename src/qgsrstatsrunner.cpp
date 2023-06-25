@@ -1,25 +1,23 @@
-
-#include <RInside.h>
-#include <Rcpp.h>
-#include <RcppCommon.h>
-
-#include "qgslogger.h"
-#include "qgsproxyprogresstask.h"
-#include "qgstaskmanager.h"
-#include "qgsvariantutils.h"
-#include "qgsapplication.h"
-#include "qgsmemoryproviderutils.h"
-#include "qgsproviderregistry.h"
-#include "qgsrasterlayer.h"
-
 #include <QDir>
 #include <QFile>
 #include <QString>
 #include <QVariant>
 
+#include <RInside.h>
+#include <Rcpp.h>
+#include <RcppCommon.h>
 
-#include "qgsrstatsrunner.h"
+#include "qgsapplication.h"
+#include "qgslogger.h"
+#include "qgsmemoryproviderutils.h"
+#include "qgsproviderregistry.h"
+#include "qgsproxyprogresstask.h"
+#include "qgsrasterlayer.h"
+#include "qgstaskmanager.h"
+#include "qgsvariantutils.h"
+
 #include "qgsrstatsmaplayerwrapper.h"
+#include "qgsrstatsrunner.h"
 #include "qgsvectorlayerfeatureiterator.h"
 
 QgsRStatsRunner::QgsRStatsRunner( std::shared_ptr<QgisInterface> iface ) : mIface( iface )
