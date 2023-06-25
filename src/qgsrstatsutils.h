@@ -9,6 +9,7 @@ class QgsField;
 class QgsFeature;
 class QgsFields;
 class QgsCoordinateReferenceSystem;
+class QgsGeometry;
 
 class QgsRstatsUtils
 {
@@ -25,6 +26,9 @@ class QgsRstatsUtils
         static bool isSf( Rcpp::DataFrame &df );
         static Rcpp::StringVector geometries( Rcpp::DataFrame &df );
         static void prepareFeature( QgsFeature &feature, Rcpp::DataFrame &df, int row, Rcpp::StringVector &geometries );
+        static Rcpp::RawVector rawWkb(QgsGeometry geom);
+        static SEXP sfCrs(QgsCoordinateReferenceSystem crs);
+
 };
 
 #endif // QGSRSTATSUTILS_H

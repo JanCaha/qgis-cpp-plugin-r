@@ -1,8 +1,9 @@
-#include "qgsrstatsutils.h"
-
 #include "qgsfields.h"
 #include "qgsfeature.h"
 #include "qgscoordinatereferencesystem.h"
+#include "qgsgeometry.h"
+
+#include "qgsrstatsutils.h"
 
 void QgsRstatsUtils::addFeatureToDf( QgsFeature feature, std::size_t featureNumber, Rcpp::DataFrame &df )
 {
@@ -204,6 +205,13 @@ QgsCoordinateReferenceSystem QgsRstatsUtils::crs(Rcpp::DataFrame &df)
   return crs;
 }
 
+SEXP QgsRstatsUtils::sfCrs(QgsCoordinateReferenceSystem crs)
+{
+  Rcpp::Function st_crs = Rcpp::Function( "st_crs", Rcpp::Environment::namespace_env( "sf" ) );
+  SEXP crsSf = st_crs( crs.toWkt(QgsCoordinateReferenceSystem::WKT_PREFERRED).toStdString() );
+  return crsSf;
+}
+
 std::string QgsRstatsUtils::geometryColumn(Rcpp::DataFrame &df)
 {
   return Rcpp::as<std::string>( df.attr( "sf_column" ) );
@@ -212,7 +220,6 @@ std::string QgsRstatsUtils::geometryColumn(Rcpp::DataFrame &df)
 Rcpp::StringVector QgsRstatsUtils::geometries(Rcpp::DataFrame &df)
 {
   Rcpp::StringVector geometries;
-  Rcpp::List geometriesWKB;
 
   if ( isSf(df) && hasSfColumn(df) )
   {
@@ -281,4 +288,12 @@ void QgsRstatsUtils::prepareFeature(QgsFeature &feature, Rcpp::DataFrame &df, in
     QgsGeometry geom = QgsGeometry::fromWkt( QString::fromStdString( wkt ) );
     feature.setGeometry( geom );
   }
+}
+
+Rcpp::RawVector QgsRstatsUtils::rawWkb(QgsGeometry geom)
+{
+  QByteArray byteArray = geom.asWkb();
+  Rcpp::RawVector wkb(byteArray.size());
+  memcpy(&wkb[0], byteArray.constData(), byteArray.size());
+  return wkb;
 }
