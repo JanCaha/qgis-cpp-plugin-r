@@ -22,7 +22,7 @@ SEXP QgsRstatsApplicationWrapper::activeLayer() const
     auto prepareOnMainThread = [&mapLayer, this]
     {
         Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "activeLayer",
-                    "prepareOnMainThread must be run on the main thread" );
+                    "QGIS$activeLayer must be run on the main thread" );
 
         mapLayer = mIface->activeLayer();
     };
@@ -41,7 +41,7 @@ SEXP QgsRstatsApplicationWrapper::mapLayers()
     auto prepareOnMainThread = [&layersNames]
     {
         Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "mapLayers",
-                    "prepareOnMainThread must be run on the main thread" );
+                    "QGIS$mapLayers must be run on the main thread" );
 
         QMap<QString, QgsMapLayer *> layers = QgsProject::instance()->mapLayers();
 
@@ -67,8 +67,8 @@ SEXP QgsRstatsApplicationWrapper::mapLayerByName( std::string layerName )
 
     auto prepareOnMainThread = [&mapLayer, &layerName]
     {
-        Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "activeLayer",
-                    "prepareOnMainThread must be run on the main thread" );
+        Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "mapLayerByName",
+                    "QGIS$mapLayerByName(layerName) must be run on the main thread" );
 
         QList<QgsMapLayer *> mapLayers = QgsProject::instance()->mapLayersByName( QString::fromStdString( layerName ) );
 
@@ -93,7 +93,7 @@ SEXP QgsRstatsApplicationWrapper::projectCrs()
     auto prepareOnMainThread = [&st_crs, &result]
     {
         Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "projectCrs",
-                    "prepareOnMainThread must be run on the main thread" );
+                    "QGIS$projectCrs must be run on the main thread" );
 
         result = st_crs( QgsProject::instance()->crs().toWkt().toStdString() );
     };
@@ -113,6 +113,7 @@ Rcpp::CharacterVector QgsRstatsApplicationWrapper::functions()
     ret.push_back( "mapLayers" );
     ret.push_back( "mapLayerByName(layerName)" );
     ret.push_back( "projectCrs" );
+    ret.push_back( "dfToLayer(df)" );
     return ret;
 }
 
