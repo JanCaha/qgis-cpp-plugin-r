@@ -127,7 +127,7 @@ SEXP QgRstatsFunctions::dfToLayer( SEXP data )
 
     bool prepared = false;
     QgsVectorLayer *resultLayer = nullptr;
-    std::unique_ptr<ScopedProgressTask> task;
+    std::unique_ptr<QgsScopedProxyProgressTask> task;
     QgsFields fields = QgsFields();
     std::string geometryColumnName;
 
@@ -150,7 +150,7 @@ SEXP QgRstatsFunctions::dfToLayer( SEXP data )
 
         resultLayer = QgsMemoryProviderUtils::createMemoryLayer( QStringLiteral( "R_layer" ), fields, wkbType, crs );
 
-        task = std::make_unique<ScopedProgressTask>( QObject::tr( "Creating QGIS layer from R dataframe" ), true );
+        task = std::make_unique<QgsScopedProxyProgressTask>( QObject::tr( "Creating QGIS layer from R dataframe" ) );
         prepared = true;
     };
 
