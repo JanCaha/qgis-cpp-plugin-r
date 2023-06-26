@@ -53,7 +53,7 @@ lyr$id
 lyr$featureCount
 lyr$toDataFrame(includeGeometries, onlySelected) # includeGeometries, onlySelected are boolean variables, creates data.frame optionally with geometry (using sf package)
 lyr$toNumericVector(fieldName, onlySelected) # fieldname is string, onlySelected is boolean
-lyr$readAsSf() # reads layer as sf object based on source on disk
+lyr$readAsSf # reads layer as sf object based on source on disk
 lyr$isVectorLayer
 lyr$isRasterLayer
 lyr$tableToDf # converts attribute table to R data.frame (only the table, no geometries)
