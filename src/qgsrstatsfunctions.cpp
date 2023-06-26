@@ -17,7 +17,6 @@
 #include "qgsrstatsfunctions.h"
 #include "qgsrstatsmaplayerwrapper.h"
 #include "qgsrstatsutils.h"
-#include "scopedprogresstask.h"
 
 SEXP QgRstatsFunctions::DollarMapLayer( Rcpp::XPtr<QgsRstatsMapLayerWrapper> obj, std::string name )
 {

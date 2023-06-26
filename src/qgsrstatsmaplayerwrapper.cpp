@@ -7,11 +7,11 @@
 #include "qgsmaplayer.h"
 #include "qgsproject.h"
 #include "qgsproviderregistry.h"
+#include "qgsproxyprogresstask.h"
 #include "qgsvectorlayerfeatureiterator.h"
 
 #include "qgsrstatsmaplayerwrapper.h"
 #include "qgsrstatsutils.h"
-#include "scopedprogresstask.h"
 
 QgsRstatsMapLayerWrapper::QgsRstatsMapLayerWrapper( const QgsMapLayer *layer )
 {
@@ -59,7 +59,7 @@ Rcpp::DataFrame QgsRstatsMapLayerWrapper::toDataFrame( bool includeGeometry, boo
     QgsFields fields;
     long long featureCount = -1;
     std::unique_ptr<QgsVectorLayerFeatureSource> source;
-    std::unique_ptr<ScopedProgressTask> task;
+    std::unique_ptr<QgsScopedProxyProgressTask> task;
     QgsFeatureIds selectedFeatureIds;
     QgsCoordinateReferenceSystem crs;
 
@@ -92,7 +92,7 @@ Rcpp::DataFrame QgsRstatsMapLayerWrapper::toDataFrame( bool includeGeometry, boo
 
         prepared = true;
 
-        task = std::make_unique<ScopedProgressTask>( QObject::tr( "Creating R dataframe" ), true );
+        task = std::make_unique<QgsScopedProxyProgressTask>( QObject::tr( "Creating R dataframe" ) );
     };
 
     QMetaObject::invokeMethod( qApp, prepareSourceFeatureCountOnMainThread, Qt::BlockingQueuedConnection );
@@ -137,7 +137,7 @@ Rcpp::DataFrame QgsRstatsMapLayerWrapper::toDataFrame( bool includeGeometry, boo
 
     if ( includeGeometry )
     {
-        Rcpp::List geoms( featureCount );
+        geoms = Rcpp::List( featureCount );
         geoms.attr( "class" ) = "WKB";
     }
 
@@ -160,8 +160,8 @@ Rcpp::DataFrame QgsRstatsMapLayerWrapper::toDataFrame( bool includeGeometry, boo
                 prevProgress = progress;
             }
 
-            if ( task->isCanceled() )
-                break;
+            // if ( task->isCanceled() )
+            //     break;
 
             QgsRstatsUtils::addFeatureToDf( feature, featureNumber, result );
             if ( includeGeometry )
@@ -193,7 +193,7 @@ Rcpp::NumericVector QgsRstatsMapLayerWrapper::toNumericVector( const std::string
     QgsFields fields;
     long long featureCount = -1;
     std::unique_ptr<QgsVectorLayerFeatureSource> source;
-    std::unique_ptr<ScopedProgressTask> task;
+    std::unique_ptr<QgsScopedProxyProgressTask> task;
     QgsFeatureIds selectedFeatureIds;
 
     auto prepareOnMainThread =
@@ -222,7 +222,7 @@ Rcpp::NumericVector QgsRstatsMapLayerWrapper::toNumericVector( const std::string
         }
         prepared = true;
 
-        task = std::make_unique<ScopedProgressTask>( QObject::tr( "Creating R dataframe" ), true );
+        task = std::make_unique<QgsScopedProxyProgressTask>( QObject::tr( "Creating R dataframe" ) );
     };
 
     QMetaObject::invokeMethod( qApp, prepareOnMainThread, Qt::BlockingQueuedConnection );
@@ -263,8 +263,8 @@ Rcpp::NumericVector QgsRstatsMapLayerWrapper::toNumericVector( const std::string
             prevProgress = progress;
         }
 
-        if ( task->isCanceled() )
-            break;
+        // if ( task->isCanceled() )
+        //     break;
 
         result[i] = feature.attribute( fieldIndex ).toDouble();
         i++;

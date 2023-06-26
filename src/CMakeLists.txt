@@ -2,7 +2,6 @@
 # Files
 set(r_plugin_SRCS
   rplugin.cpp
-  scopedprogresstask.cpp
 
   qgsrstatsapplicationwrapper.cpp
   qgsrstatsfunctions.cpp
@@ -21,7 +20,6 @@ set(r_plugin_RCCS
 
 SET(PUBLIC_HEADERS_FILES
   rplugin.h
-  scopedprogresstask.h
 
   qgsrstatsapplicationwrapper.h
   qgsrstatsfunctions.h
