@@ -19,7 +19,7 @@
 #include <QWidget>
 
 #include "qgisinterface.h"
-#include "qgsdockwidget.h"
+#include "qgscodeeditordockwidget.h"
 
 class QgsInteractiveRWidget;
 class QgsRStatsRunner;
@@ -27,7 +27,7 @@ class QLineEdit;
 class QTextBrowser;
 class QgsCodeEditorR;
 
-class QgsRStatsConsole : public QgsDockWidget
+class QgsRStatsConsole : public QgsCodeEditorDockWidget
 {
     public:
         QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRunner> runner,

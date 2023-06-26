@@ -26,6 +26,7 @@
 #include <QTextBrowser>
 #include <QTextStream>
 #include <QToolBar>
+#include <QToolButton>
 #include <QVBoxLayout>
 
 #include "qgsrstatsconsole.h"
@@ -33,13 +34,13 @@
 
 QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRunner> runner,
                                     std::shared_ptr<QgisInterface> iface )
-    : QgsDockWidget( parent ), mRunner( runner ), mIface( iface )
+    : QgsCodeEditorDockWidget( "RConsole", true ), mRunner( runner ), mIface( iface )
 {
     setWindowTitle( QString( "R Console" ) );
     setObjectName( QString( "R Console" ) );
     setWindowFlags( Qt::WindowType::Window );
 
-    iface->addDockWidget( Qt::DockWidgetArea::BottomDockWidgetArea, this );
+    // iface->addDockWidget( Qt::DockWidgetArea::BottomDockWidgetArea, this );
 
     QToolBar *toolBar = new QToolBar( this );
     toolBar->setIconSize( iface->iconSize( true ) );
@@ -105,10 +106,7 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
 
     vl->addWidget( splitter );
 
-    QWidget *w = new QWidget( this );
-    w->setLayout( vl );
-
-    setWidget( w );
+    setLayout( vl );
 
     connect( mRunner.get(), &QgsRStatsRunner::errorOccurred, this,
              [=]( const QString &error )
@@ -141,6 +139,9 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
              } );
 
     // setLayout( vl );
+
+    toolBar->addSeparator();
+    toolBar->addWidget( dockToggleButton() );
 
     mRunner->showStartupMessage();
 }
