@@ -59,3 +59,11 @@ void QgsRStatsRunner::setLibraryPath()
 }
 
 void QgsRStatsRunner::emptyRMemory() { mSession->emptyRMemory(); }
+
+QString QgsRStatsRunner::promptForState( int state ) const { return QString( ">" ); };
+
+int QgsRStatsRunner::execCommandImpl( const QString &command )
+{
+    execCommand( command );
+    return 0;
+}
