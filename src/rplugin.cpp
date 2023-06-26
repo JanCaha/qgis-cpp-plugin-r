@@ -34,6 +34,9 @@ void RPlugin::prepareForUse()
     if ( !mRStatsRunner )
     {
         mRStatsRunner = std::make_shared<QgsRStatsRunner>( mIface );
+    }
+    if ( !mRConsole )
+    {
         mRConsole = std::make_shared<QgsRStatsConsole>( mIface->mainWindow(), mRStatsRunner, mIface );
     }
 }
