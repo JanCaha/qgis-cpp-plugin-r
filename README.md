@@ -2,7 +2,7 @@
 
 C++ plugin for [QGIS](https://qgis.org/) that allows running [R](https://cran.r-project.org/) directly from QGIS in form of interactive R Console (in the ways similar to QGIS's native Python Console).
 
-The plugin is highly experimental and quite likely to break!
+The plugin is highly experimental and quite likely to break and cause QGIS fails!
 
 ![](https://img.shields.io/badge/lifecycle-experimental-orange)
 
