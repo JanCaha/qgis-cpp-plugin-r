@@ -27,7 +27,6 @@
 #include <QToolBar>
 #include <QVBoxLayout>
 
-#include "qgsinteractiverwidget.h"
 #include "qgsrstatsconsole.h"
 #include "qgsrstatsrunner.h"
 
@@ -84,10 +83,13 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
     splitter->setHandleWidth( 3 );
     splitter->setChildrenCollapsible( false );
 
-    mOutput = new QgsCodeEditorR( nullptr, QgsCodeEditor::Mode::OutputDisplay );
+    mOutput = new QgsCodeEditorR( this, QgsCodeEditor::Mode::OutputDisplay );
     splitter->addWidget( mOutput );
-    mInputEdit = new QgsInteractiveRWidget();
+
+    mInputEdit = new QgsCodeEditorR( this, QgsCodeEditor::Mode::CommandInput );
     mInputEdit->setFont( QgsCodeEditor::getMonospaceFont() );
+    mInputEdit->setInterpreter( mRunner.get() );
+
     splitter->addWidget( mInputEdit );
 
     vl->addWidget( splitter );
@@ -96,19 +98,6 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
     w->setLayout( vl );
 
     setWidget( w );
-
-    connect( mInputEdit, &QgsInteractiveRWidget::runCommand, this,
-             [=]( const QString &command )
-             {
-                 if ( mRunner->busy() )
-                     return;
-
-                 mInputEdit->clear();
-                 mOutput->append( ( mOutput->text().isEmpty() ? QString() : QString( '\n' ) ) + QStringLiteral( "> " ) +
-                                  command );
-                 mOutput->moveCursorToEnd();
-                 mRunner->execCommand( command );
-             } );
 
     connect( mRunner.get(), &QgsRStatsRunner::errorOccurred, this,
              [=]( const QString &error )

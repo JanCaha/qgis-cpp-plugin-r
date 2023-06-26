@@ -30,12 +30,13 @@ class QgsCodeEditorR;
 class QgsRStatsConsole : public QgsDockWidget
 {
     public:
-        QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRunner> runner, std::shared_ptr<QgisInterface> iface );
+        QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRunner> runner,
+                          std::shared_ptr<QgisInterface> iface );
         ~QgsRStatsConsole() override;
 
     private:
         std::shared_ptr<QgsRStatsRunner> mRunner = nullptr;
-        QgsInteractiveRWidget *mInputEdit = nullptr;
+        QgsCodeEditorR *mInputEdit = nullptr;
         QgsCodeEditorR *mOutput = nullptr;
         QAction *mReadRScript = nullptr;
         QAction *mEmptyRMemory = nullptr;
