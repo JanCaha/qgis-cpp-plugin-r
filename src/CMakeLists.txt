@@ -12,7 +12,6 @@ set(r_plugin_SRCS
   qgsrstatsutils.cpp
 
   qgsrstatsconsole.cpp
-  qgsinteractiverwidget.cpp
   qgsrstatssettings.cpp
 )
 
@@ -32,7 +31,6 @@ SET(PUBLIC_HEADERS_FILES
   qgsrstatsutils.h
 
   qgsrstatsconsole.h
-  qgsinteractiverwidget.h
   qgsrstatssettings.h
 )
 
