@@ -1,8 +1,8 @@
 #ifndef QGSRSTATSMAPLAYERWRAPPER_H
 #define QGSRSTATSMAPLAYERWRAPPER_H
 
-#include <RcppCommon.h>
 #include <Rcpp.h>
+#include <RcppCommon.h>
 
 #include "qgsmaplayer.h"
 #include "qgsrasterlayer.h"
@@ -10,51 +10,44 @@
 
 class QgsRstatsMapLayerWrapper
 {
-  public:
-    enum RasterPackage
-    {
-      raster,
-      stars,
-      terra
-    };
+    public:
+        enum RasterPackage
+        {
+            raster,
+            stars,
+            terra
+        };
 
-    QgsRstatsMapLayerWrapper( const QgsMapLayer *layer = nullptr );
+        QgsRstatsMapLayerWrapper( const QgsMapLayer *layer = nullptr );
 
-    std::string id() const;
+        std::string id() const;
 
-    SEXP featureCount() const;
+        SEXP featureCount() const;
 
-    Rcpp::DataFrame toDataFrame( bool includeGeometry, bool selectedOnly ) const;
+        Rcpp::DataFrame toDataFrame( bool includeGeometry, bool selectedOnly ) const;
 
-    Rcpp::NumericVector toNumericVector( const std::string &fieldName, bool selectedOnly );
+        Rcpp::NumericVector toNumericVector( const std::string &fieldName, bool selectedOnly );
 
-    SEXP readAsSf();
+        SEXP readAsSf();
 
-    bool isVectorLayer() const;
+        bool isVectorLayer() const;
 
-    bool isRasterLayer() const;
+        bool isRasterLayer() const;
 
-    SEXP toRaster();
+        SEXP toRaster();
 
-    SEXP toTerra();
+        SEXP toTerra();
 
-    SEXP toStars();
+        SEXP toStars();
 
-    QgsRasterLayer *rasterLayer() const;
+        static Rcpp::CharacterVector functions();
+        static std::string rClassName();
+        static std::string s3FunctionForClass( std::string functionName );
 
-    QgsVectorLayer *vectorLayer() const;
+    private:
+        QString mLayerId;
 
-    static Rcpp::CharacterVector functions();
-    static std::string rClassName();
-    static std::string s3FunctionForClass( std::string functionName );
-
-  private:
-    QString mLayerId;
-
-    SEXP toRasterDataObject( RasterPackage rasterPackage );
-
-    QgsMapLayer *mapLayer() const;
-
+        SEXP toRasterDataObject( RasterPackage rasterPackage );
 };
 
 #endif // QGSRSTATSMAPLAYERWRAPPER_H
