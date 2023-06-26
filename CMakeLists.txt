@@ -55,6 +55,31 @@ set(R_INSIDE_INCLUDE
   ${CMAKE_SOURCE_DIR}/external/cpp11/inst/include
 )
 
+set(LIBS
+  ${QGIS_CORE_LIBRARY}
+  ${QGIS_GUI_LIBRARY}
+  ${QGIS_ANALYSIS_LIBRARY}
+  ${R_LIB}
+  Rcpp
+  ${RINSIDE_LIBRARY}
+  Qt5::Core
+  Qt5::Gui
+  Qt5::Xml
+  Qt5::Widgets
+)
+
+set(INCLUDES
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${QGIS_INCLUDE_DIR}
+  ${R_INCLUDE_DIR}
+  ${RCpp_INCLUDE_DIR}
+  ${R_INSIDE_INCLUDE}
+)
+
+include_directories(
+  ${INCLUDES}
+)
+
 # The compiled library code is here
 add_subdirectory(src)
 

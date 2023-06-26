@@ -1,16 +1,3 @@
-set(LIBS
-  ${QGIS_CORE_LIBRARY}
-  ${QGIS_GUI_LIBRARY}
-  ${QGIS_ANALYSIS_LIBRARY}
-  ${R_LIB}
-  Rcpp
-  ${RINSIDE_LIBRARY}
-  Qt5::Core
-  Qt5::Gui
-  Qt5::Xml
-  Qt5::Widgets
-)
-
 # #######################################################
 # Files
 set(r_plugin_SRCS
@@ -66,19 +53,7 @@ target_link_libraries(r_plugin
 )
 
 target_include_directories(r_plugin PUBLIC
-  ${QGIS_INCLUDE_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${R_INCLUDE_DIR}
-  ${RCpp_INCLUDE_DIR}
-  ${R_INSIDE_INCLUDE}
-)
-
-include_directories(
-  ${QGIS_INCLUDE_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${R_INCLUDE_DIR}
-  ${RCpp_INCLUDE_DIR}
-  ${R_INSIDE_INCLUDE}
+  ${INCLUDES}
 )
 
 ADD_CUSTOM_COMMAND(
