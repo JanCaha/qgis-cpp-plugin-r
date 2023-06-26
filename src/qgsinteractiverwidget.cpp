@@ -1,19 +1,22 @@
-#include "interactiverwidget.h"
+#include <QKeyEvent>
 
-InteractiveRWidget::InteractiveRWidget( QWidget *parent ) : QgsCodeEditorR( parent, QgsCodeEditor::Mode::CommandInput )
+#include "qgsinteractiverwidget.h"
+
+QgsInteractiveRWidget::QgsInteractiveRWidget( QWidget *parent )
+    : QgsCodeEditorR( parent, QgsCodeEditor::Mode::CommandInput )
 {
     displayPrompt( false );
 
-    InteractiveRWidget::initializeLexer();
+    QgsInteractiveRWidget::initializeLexer();
 }
 
-void InteractiveRWidget::clear()
+void QgsInteractiveRWidget::clear()
 {
     QgsCodeEditorR::clear();
     displayPrompt( false );
 }
 
-void InteractiveRWidget::keyPressEvent( QKeyEvent *event )
+void QgsInteractiveRWidget::keyPressEvent( QKeyEvent *event )
 {
     switch ( event->key() )
     {
@@ -28,7 +31,7 @@ void InteractiveRWidget::keyPressEvent( QKeyEvent *event )
     }
 }
 
-void InteractiveRWidget::initializeLexer()
+void QgsInteractiveRWidget::initializeLexer()
 {
     QgsCodeEditorR::initializeLexer();
 
@@ -42,7 +45,7 @@ void InteractiveRWidget::initializeLexer()
     setEdgeMode( QsciScintilla::EdgeNone );
 }
 
-void InteractiveRWidget::displayPrompt( bool more )
+void QgsInteractiveRWidget::displayPrompt( bool more )
 {
     const QString prompt = !more ? ">" : "+";
     SendScintilla( QsciScintilla::SCI_MARGINSETTEXT, static_cast<uintptr_t>( 0 ), prompt.toUtf8().constData() );

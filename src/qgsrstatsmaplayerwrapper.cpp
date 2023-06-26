@@ -1,22 +1,36 @@
-#include "QThread"
+#include <QString>
+#include <QThread>
 
+#include <Rcpp.h>
+#include <RcppCommon.h>
+
+#include "qgsmaplayer.h"
 #include "qgsproject.h"
 #include "qgsproviderregistry.h"
-#include "qgsrasterlayer.h"
-#include "qgsvectorlayer.h"
 #include "qgsvectorlayerfeatureiterator.h"
 
-#include "maplayerwrapper.h"
+#include "qgsrstatsmaplayerwrapper.h"
+#include "qgsrstatsutils.h"
 #include "scopedprogresstask.h"
 
-MapLayerWrapper::MapLayerWrapper( const QgsMapLayer *layer ) : mLayerId( layer ? layer->id() : QString() ) {}
-
-std::string MapLayerWrapper::id() const { return mLayerId.toStdString(); }
-
-QgsMapLayer *MapLayerWrapper::mapLayer() const { return QgsProject::instance()->mapLayer( mLayerId ); }
-
-long long MapLayerWrapper::featureCount() const
+QgsRstatsMapLayerWrapper::QgsRstatsMapLayerWrapper( const QgsMapLayer *layer )
 {
+    auto idOnMainThread = [&layer, this]
+    {
+        Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "idOnMainThread",
+                    "idOnMainThread must be run on the main thread" );
+        mLayerId = layer ? layer->id() : QString();
+    };
+    QMetaObject::invokeMethod( qApp, idOnMainThread, Qt::BlockingQueuedConnection );
+}
+
+std::string QgsRstatsMapLayerWrapper::id() const { return mLayerId.toStdString(); }
+
+SEXP QgsRstatsMapLayerWrapper::featureCount() const
+{
+    if ( isRasterLayer() )
+        return R_NilValue;
+
     long long res = -1;
     auto countOnMainThread = [&res, this]
     {
@@ -33,10 +47,11 @@ long long MapLayerWrapper::featureCount() const
     };
 
     QMetaObject::invokeMethod( qApp, countOnMainThread, Qt::BlockingQueuedConnection );
-    return res;
+
+    return Rcpp::wrap( res );
 }
 
-Rcpp::DataFrame MapLayerWrapper::toDataFrame( bool selectedOnly )
+Rcpp::DataFrame QgsRstatsMapLayerWrapper::toDataFrame( bool includeGeometry, bool selectedOnly ) const
 {
     Rcpp::DataFrame result = Rcpp::DataFrame();
 
@@ -46,13 +61,16 @@ Rcpp::DataFrame MapLayerWrapper::toDataFrame( bool selectedOnly )
     std::unique_ptr<QgsVectorLayerFeatureSource> source;
     std::unique_ptr<ScopedProgressTask> task;
     QgsFeatureIds selectedFeatureIds;
-    auto prepareOnMainThread =
-        [&prepared, &fields, &featureCount, &source, &task, selectedOnly, &selectedFeatureIds, this]
+    QgsCoordinateReferenceSystem crs;
+
+    auto prepareSourceFeatureCountOnMainThread =
+        [&prepared, &fields, &featureCount, &source, &task, selectedOnly, &selectedFeatureIds, &crs, this]
     {
         Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "toDataFrame",
-                    "prepareOnMainThread must be run on the main thread" );
+                    "toDataFrame must be run on the main thread" );
 
         prepared = false;
+
         if ( QgsMapLayer *layer = QgsProject::instance()->mapLayer( mLayerId ) )
         {
             if ( QgsVectorLayer *vlayer = qobject_cast<QgsVectorLayer *>( layer ) )
@@ -68,143 +86,106 @@ Rcpp::DataFrame MapLayerWrapper::toDataFrame( bool selectedOnly )
                 {
                     featureCount = vlayer->featureCount();
                 }
+                crs = vlayer->crs();
             }
         }
+
         prepared = true;
 
         task = std::make_unique<ScopedProgressTask>( QObject::tr( "Creating R dataframe" ), true );
     };
 
-    QMetaObject::invokeMethod( qApp, prepareOnMainThread, Qt::BlockingQueuedConnection );
+    QMetaObject::invokeMethod( qApp, prepareSourceFeatureCountOnMainThread, Qt::BlockingQueuedConnection );
+
     if ( !prepared )
         return result;
 
     QList<int> attributesToFetch;
-    for ( int index = 0; index < fields.count(); ++index )
+
+    auto prepareAttributesOnMainThread = [&attributesToFetch, &result, &fields, &featureCount]
     {
-        Rcpp::RObject column;
-        const QgsField field = fields.at( index );
+        Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "toDataFrame",
+                    "toDataFrame must be run on the main thread" );
 
-        switch ( field.type() )
+        for ( int index = 0; index < fields.count(); ++index )
         {
-            case QVariant::Bool:
-            {
-                column = Rcpp::LogicalVector( featureCount );
-                break;
-            }
-            case QVariant::Int:
-            {
-                column = Rcpp::IntegerVector( featureCount );
-                break;
-            }
-            case QVariant::Double:
-            {
-                column = Rcpp::DoubleVector( featureCount );
-                break;
-            }
-            case QVariant::LongLong:
-            {
-                column = Rcpp::DoubleVector( featureCount );
-                break;
-            }
-            case QVariant::String:
-            {
-                column = Rcpp::StringVector( featureCount );
-                break;
-            }
+            const QgsField field = fields.at( index );
 
-            default:
-                continue;
+            if ( QgsRstatsUtils::canConvertToRcpp( field ) )
+            {
+                result.push_back( QgsRstatsUtils::fieldToRcppVector( field, featureCount ),
+                                  field.name().toStdString() );
+                attributesToFetch.append( index );
+            }
         }
+    };
 
-        result.push_back( column, field.name().toStdString() );
-        attributesToFetch.append( index );
-    }
+    QMetaObject::invokeMethod( qApp, prepareAttributesOnMainThread, Qt::BlockingQueuedConnection );
 
     if ( selectedOnly && selectedFeatureIds.empty() )
         return result;
 
     QgsFeature feature;
     QgsFeatureRequest req;
-    req.setFlags( QgsFeatureRequest::NoGeometry );
     req.setSubsetOfAttributes( attributesToFetch );
+    if ( !includeGeometry )
+        req.setFlags( QgsFeatureRequest::NoGeometry );
     if ( selectedOnly )
         req.setFilterFids( selectedFeatureIds );
 
-    QgsFeatureIterator it = source->getFeatures( req );
-    std::size_t featureNumber = 0;
+    Rcpp::List geoms;
 
-    int prevProgress = 0;
-    while ( it.nextFeature( feature ) )
+    if ( includeGeometry )
     {
-        const int progress = 100 * static_cast<double>( featureNumber ) / featureCount;
-        if ( progress > prevProgress )
-        {
-            task->setProgress( progress );
-            prevProgress = progress;
-        }
-
-        if ( task->isCanceled() )
-            break;
-
-        int settingColumn = 0;
-
-        const QgsAttributes attributes = feature.attributes();
-        const QVariant *attributeData = attributes.constData();
-
-        for ( int i = 0; i < fields.count(); i++, attributeData++ )
-        {
-            QgsField field = fields.at( i );
-
-            switch ( field.type() )
-            {
-                case QVariant::Bool:
-                {
-                    Rcpp::LogicalVector column = result[settingColumn];
-                    column[featureNumber] = attributeData->toBool();
-                    break;
-                }
-                case QVariant::Int:
-                {
-                    Rcpp::IntegerVector column = result[settingColumn];
-                    column[featureNumber] = attributeData->toInt();
-                    break;
-                }
-                case QVariant::LongLong:
-                {
-                    Rcpp::DoubleVector column = result[settingColumn];
-                    bool ok;
-                    double val = attributeData->toDouble( &ok );
-                    if ( ok )
-                        column[featureNumber] = val;
-                    else
-                        column[featureNumber] = R_NaReal;
-                    break;
-                }
-                case QVariant::Double:
-                {
-                    Rcpp::DoubleVector column = result[settingColumn];
-                    column[featureNumber] = attributeData->toDouble();
-                    break;
-                }
-                case QVariant::String:
-                {
-                    Rcpp::StringVector column = result[settingColumn];
-                    column[featureNumber] = attributeData->toString().toStdString();
-                    break;
-                }
-
-                default:
-                    continue;
-            }
-            settingColumn++;
-        }
-        featureNumber++;
+        Rcpp::List geoms( featureCount );
+        geoms.attr( "class" ) = "WKB";
     }
+
+    auto prepareFeaturesOnMainThread =
+        [&source, &result, &req, &feature, &featureCount, &geoms, &includeGeometry, &task]
+    {
+        Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "toDataFrame",
+                    "toDataFrame must be run on the main thread" );
+
+        QgsFeatureIterator it = source->getFeatures( req );
+        std::size_t featureNumber = 0;
+
+        int prevProgress = 0;
+        while ( it.nextFeature( feature ) )
+        {
+            const int progress = 100 * static_cast<double>( featureNumber ) / featureCount;
+            if ( progress > prevProgress )
+            {
+                task->setProgress( progress );
+                prevProgress = progress;
+            }
+
+            if ( task->isCanceled() )
+                break;
+
+            QgsRstatsUtils::addFeatureToDf( feature, featureNumber, result );
+            if ( includeGeometry )
+                geoms[featureNumber] = QgsRstatsUtils::rawWkb( feature.geometry() );
+
+            featureNumber++;
+        }
+    };
+
+    QMetaObject::invokeMethod( qApp, prepareFeaturesOnMainThread, Qt::BlockingQueuedConnection );
+
+    if ( includeGeometry )
+    {
+        Rcpp::Function st_as_sfc( "st_as_sfc", Rcpp::Environment::namespace_env( "sf" ) );
+        SEXP geometryCol = st_as_sfc( geoms, Rcpp::Named( "crs" ) = QgsRstatsUtils::sfCrs( crs ) );
+
+        Rcpp::Function st_set_geometry( "st_set_geometry", Rcpp::Environment::namespace_env( "sf" ) );
+        result = st_set_geometry( result, geometryCol );
+    }
+
     return result;
 }
 
-Rcpp::NumericVector MapLayerWrapper::toNumericVector( const std::string &fieldName, bool selectedOnly )
+Rcpp::NumericVector QgsRstatsMapLayerWrapper::toNumericVector( const std::string &fieldName, bool selectedOnly )
 {
     Rcpp::NumericVector result;
 
@@ -245,6 +226,7 @@ Rcpp::NumericVector MapLayerWrapper::toNumericVector( const std::string &fieldNa
     };
 
     QMetaObject::invokeMethod( qApp, prepareOnMainThread, Qt::BlockingQueuedConnection );
+
     if ( !prepared )
         return result;
 
@@ -291,14 +273,20 @@ Rcpp::NumericVector MapLayerWrapper::toNumericVector( const std::string &fieldNa
     return result;
 }
 
-SEXP MapLayerWrapper::toSf()
+SEXP QgsRstatsMapLayerWrapper::readAsSf()
 {
+    if ( !isVectorLayer() )
+    {
+        return R_NilValue;
+    }
+
     bool prepared = false;
     QString path;
     QString layerName;
+
     auto prepareOnMainThread = [&prepared, &path, &layerName, this]
     {
-        Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "toSf",
+        Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "readAsSf",
                     "prepareOnMainThread must be run on the main thread" );
 
         prepared = false;
@@ -306,14 +294,14 @@ SEXP MapLayerWrapper::toSf()
         {
             if ( QgsVectorLayer *vlayer = qobject_cast<QgsVectorLayer *>( layer ) )
             {
-                if ( vlayer->dataProvider()->name() != QStringLiteral( "ogr" ) )
-                    return;
-
-                const QVariantMap parts =
-                    QgsProviderRegistry::instance()->decodeUri( layer->dataProvider()->name(), layer->source() );
-                path = parts[QStringLiteral( "path" )].toString();
-                layerName = parts[QStringLiteral( "layerName" )].toString();
-                prepared = true;
+                if ( vlayer->dataProvider()->name() == QStringLiteral( "ogr" ) )
+                {
+                    const QVariantMap parts =
+                        QgsProviderRegistry::instance()->decodeUri( layer->dataProvider()->name(), layer->source() );
+                    path = parts[QStringLiteral( "path" )].toString();
+                    layerName = parts[QStringLiteral( "layerName" )].toString();
+                    prepared = true;
+                }
             }
         }
     };
@@ -325,12 +313,12 @@ SEXP MapLayerWrapper::toSf()
     if ( path.isEmpty() )
         return R_NilValue;
 
-    Rcpp::Function st_read( "st_read" );
+    Rcpp::Function st_read( "st_read", Rcpp::Environment::namespace_env( "sf" ) );
 
     return st_read( path.toStdString(), layerName.toStdString() );
 }
 
-Rcpp::LogicalVector MapLayerWrapper::isVectorLayer()
+bool QgsRstatsMapLayerWrapper::isVectorLayer() const
 {
     bool prepared;
     bool isVectorLayer = false;
@@ -345,6 +333,7 @@ Rcpp::LogicalVector MapLayerWrapper::isVectorLayer()
         {
             if ( QgsVectorLayer *vlayer = qobject_cast<QgsVectorLayer *>( layer ) )
             {
+                Q_UNUSED( vlayer );
                 isVectorLayer = true;
             }
         }
@@ -358,7 +347,7 @@ Rcpp::LogicalVector MapLayerWrapper::isVectorLayer()
     return isVectorLayer;
 }
 
-Rcpp::LogicalVector MapLayerWrapper::isRasterLayer()
+bool QgsRstatsMapLayerWrapper::isRasterLayer() const
 {
     bool prepared;
     bool isRasterLayer = false;
@@ -373,6 +362,7 @@ Rcpp::LogicalVector MapLayerWrapper::isRasterLayer()
         {
             if ( QgsRasterLayer *rlayer = qobject_cast<QgsRasterLayer *>( layer ) )
             {
+                Q_UNUSED( rlayer );
                 isRasterLayer = true;
             }
         }
@@ -386,15 +376,73 @@ Rcpp::LogicalVector MapLayerWrapper::isRasterLayer()
     return isRasterLayer;
 }
 
-SEXP MapLayerWrapper::toRaster() { return this->toRasterDataObject( RasterPackage::raster ); }
-
-SEXP MapLayerWrapper::toTerra() { return this->toRasterDataObject( RasterPackage::terra ); }
-
-SEXP MapLayerWrapper::toStars() { return this->toRasterDataObject( RasterPackage::stars ); }
-
-SEXP MapLayerWrapper::toRasterDataObject( RasterPackage rasterPackage )
+enum RasterPackage
 {
-    if ( !this->isRasterLayer()( 0 ) )
+    raster,
+    stars,
+    terra
+};
+
+SEXP QgsRstatsMapLayerWrapper::toRaster() { return this->toRasterDataObject( RasterPackage::raster ); }
+
+SEXP QgsRstatsMapLayerWrapper::toTerra() { return this->toRasterDataObject( RasterPackage::terra ); }
+
+SEXP QgsRstatsMapLayerWrapper::toStars() { return this->toRasterDataObject( RasterPackage::stars ); }
+
+QgsMapLayer *QgsRstatsMapLayerWrapper::mapLayer() const
+{
+    QgsMapLayer *mapLayer;
+
+    auto prepareOnMainThread = [&mapLayer, this]
+    {
+        Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "toDataFrame",
+                    "prepareOnMainThread must be run on the main thread" );
+
+        mapLayer = QgsProject::instance()->mapLayer( mLayerId );
+    };
+
+    QMetaObject::invokeMethod( qApp, prepareOnMainThread, Qt::BlockingQueuedConnection );
+
+    return mapLayer;
+}
+
+QgsRasterLayer *QgsRstatsMapLayerWrapper::rasterLayer() const
+{
+    QgsRasterLayer *rlayer = nullptr;
+
+    auto prepareOnMainThread = [&rlayer, this]
+    {
+        Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "rasterLayer",
+                    "prepareOnMainThread must be run on the main thread" );
+
+        rlayer = QgsProject::instance()->mapLayer<QgsRasterLayer *>( mLayerId );
+    };
+
+    QMetaObject::invokeMethod( qApp, prepareOnMainThread, Qt::BlockingQueuedConnection );
+
+    return rlayer;
+}
+
+QgsVectorLayer *QgsRstatsMapLayerWrapper::vectorLayer() const
+{
+    QgsVectorLayer *vlayer = nullptr;
+
+    auto prepareOnMainThread = [&vlayer, this]
+    {
+        Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "rasterLayer",
+                    "prepareOnMainThread must be run on the main thread" );
+
+        vlayer = QgsProject::instance()->mapLayer<QgsVectorLayer *>( mLayerId );
+    };
+
+    QMetaObject::invokeMethod( qApp, prepareOnMainThread, Qt::BlockingQueuedConnection );
+
+    return vlayer;
+}
+
+SEXP QgsRstatsMapLayerWrapper::toRasterDataObject( RasterPackage rasterPackage )
+{
+    if ( !this->isRasterLayer() )
         return R_NilValue;
 
     bool prepared = false;
@@ -405,17 +453,16 @@ SEXP MapLayerWrapper::toRasterDataObject( RasterPackage rasterPackage )
         Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "toRaster",
                     "prepareOnMainThread must be run on the main thread" );
 
-        if ( QgsMapLayer *layer = QgsProject::instance()->mapLayer( mLayerId ) )
+        if ( QgsRasterLayer *rlayer = rasterLayer() )
         {
-            if ( QgsRasterLayer *rlayer = qobject_cast<QgsRasterLayer *>( layer ) )
-            {
-                rasterPath = rlayer->dataProvider()->dataSourceUri();
-            }
+            rasterPath = rlayer->dataProvider()->dataSourceUri();
         }
+
         prepared = true;
     };
 
     QMetaObject::invokeMethod( qApp, prepareOnMainThread, Qt::BlockingQueuedConnection );
+
     if ( !prepared )
         return R_NilValue;
 
@@ -442,4 +489,24 @@ SEXP MapLayerWrapper::toRasterDataObject( RasterPackage rasterPackage )
         default:
             return Rcpp::wrap( rasterPath.toStdString() );
     }
+}
+
+std::string QgsRstatsMapLayerWrapper::rClassName() { return "QgsMapLayerWrapper"; }
+
+Rcpp::CharacterVector QgsRstatsMapLayerWrapper::functions()
+{
+    Rcpp::CharacterVector ret;
+    ret.push_back( "id" );
+    ret.push_back( "featureCount" );
+    ret.push_back( "toDataFrame(includeGeometries, onlySelected)" );
+    ret.push_back( "toNumericVector(fieldName, onlySelected)" );
+    ret.push_back( "readAsSf" );
+    ret.push_back( "toSf" );
+    ret.push_back( "tableToDf" );
+    return ret;
+}
+
+std::string QgsRstatsMapLayerWrapper::s3FunctionForClass( std::string functionName )
+{
+    return functionName + "." + rClassName();
 }

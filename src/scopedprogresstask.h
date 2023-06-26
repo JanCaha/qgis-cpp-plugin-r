@@ -1,3 +1,6 @@
+#ifndef SCOPEDPROGRESSTASK_H
+#define SCOPEDPROGRESSTASK_H
+
 #include "qgsproxyprogresstask.h"
 #include "qgstaskmanager.h"
 
@@ -22,5 +25,7 @@ class ScopedProgressTask
         bool isCanceled() const;
 
     private:
-        std::unique_ptr<ProxyProgressTask> mTask = nullptr;
+        ProxyProgressTask *mTask = nullptr;
 };
+
+#endif

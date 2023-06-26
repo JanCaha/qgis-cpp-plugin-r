@@ -13,32 +13,27 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <QDialog>
-#include <QDialogButtonBox>
-#include <QDir>
+#include "qgsapplication.h"
+#include "qgscodeeditor.h"
+#include "qgscodeeditorr.h"
+
 #include <QFileDialog>
-#include <QFormLayout>
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QPushButton>
-#include <QSettings>
 #include <QSplitter>
 #include <QTextBrowser>
 #include <QTextStream>
 #include <QToolBar>
 #include <QVBoxLayout>
-#include <QWidget>
 
-#include "qgscodeeditorr.h"
-#include "qgsdockwidgetplugin.h"
+#include "qgsinteractiverwidget.h"
+#include "qgsrstatsconsole.h"
+#include "qgsrstatsrunner.h"
 
-#include "../rstatsrunner.h"
-#include "rsettingsdialog.h"
-#include "rstatsconsole.h"
-
-RStatsConsole::RStatsConsole( QWidget *parent, std::shared_ptr<RStatsRunner> runner,
-                              std::shared_ptr<QgisInterface> iface )
-    : QgsDockWidget( parent ), mRunner( runner )
+QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRunner> runner,
+                                    std::shared_ptr<QgisInterface> iface )
+    : QgsDockWidget( parent ), mRunner( runner ), mIface( iface )
 {
     setWindowTitle( QString( "R Console" ) );
     setObjectName( QString( "R Console" ) );
@@ -75,21 +70,6 @@ RStatsConsole::RStatsConsole( QWidget *parent, std::shared_ptr<RStatsRunner> run
                  }
              } );
 
-    mSettings = new QAction( "Settings", this );
-    toolBar->addAction( mSettings );
-
-    connect( mSettings, &QAction::triggered, this,
-             [=]()
-             {
-                 RSettingsDialog *dialog = new RSettingsDialog( this );
-                 int result = dialog->exec();
-
-                 if ( result == RSettingsDialog::Accepted )
-                 {
-                     mRunner->execCommand( QStringLiteral( ".libPaths(\"%1\")" ).arg( dialog->rLibraryPath() ) );
-                 }
-             } );
-
     mEmptyRMemory = new QAction( tr( "Empty R Memory" ), this );
     toolBar->addAction( mEmptyRMemory );
 
@@ -106,7 +86,7 @@ RStatsConsole::RStatsConsole( QWidget *parent, std::shared_ptr<RStatsRunner> run
 
     mOutput = new QgsCodeEditorR( nullptr, QgsCodeEditor::Mode::OutputDisplay );
     splitter->addWidget( mOutput );
-    mInputEdit = new InteractiveRWidget();
+    mInputEdit = new QgsInteractiveRWidget();
     mInputEdit->setFont( QgsCodeEditor::getMonospaceFont() );
     splitter->addWidget( mInputEdit );
 
@@ -117,7 +97,7 @@ RStatsConsole::RStatsConsole( QWidget *parent, std::shared_ptr<RStatsRunner> run
 
     setWidget( w );
 
-    connect( mInputEdit, &InteractiveRWidget::runCommand, this,
+    connect( mInputEdit, &QgsInteractiveRWidget::runCommand, this,
              [=]( const QString &command )
              {
                  if ( mRunner->busy() )
@@ -130,14 +110,14 @@ RStatsConsole::RStatsConsole( QWidget *parent, std::shared_ptr<RStatsRunner> run
                  mRunner->execCommand( command );
              } );
 
-    connect( mRunner.get(), &RStatsRunner::errorOccurred, this,
+    connect( mRunner.get(), &QgsRStatsRunner::errorOccurred, this,
              [=]( const QString &error )
              {
                  mOutput->append( ( mOutput->text().isEmpty() ? QString() : QString( '\n' ) ) + error );
                  mOutput->moveCursorToEnd();
              } );
 
-    connect( mRunner.get(), &RStatsRunner::consoleMessage, this,
+    connect( mRunner.get(), &QgsRStatsRunner::consoleMessage, this,
              [=]( const QString &message, int type )
              {
                  if ( type == 0 )
@@ -147,14 +127,14 @@ RStatsConsole::RStatsConsole( QWidget *parent, std::shared_ptr<RStatsRunner> run
                  mOutput->moveCursorToEnd();
              } );
 
-    connect( mRunner.get(), &RStatsRunner::showMessage, this,
+    connect( mRunner.get(), &QgsRStatsRunner::showMessage, this,
              [=]( const QString &message )
              {
                  mOutput->append( ( mOutput->text().isEmpty() ? QString() : QString( '\n' ) ) + message );
                  mOutput->moveCursorToEnd();
              } );
 
-    connect( mRunner.get(), &RStatsRunner::busyChanged, this,
+    connect( mRunner.get(), &QgsRStatsRunner::busyChanged, this,
              [=]( bool busy )
              {
                  // mInputEdit->setEnabled( !busy );
@@ -165,4 +145,10 @@ RStatsConsole::RStatsConsole( QWidget *parent, std::shared_ptr<RStatsRunner> run
     mRunner->showStartupMessage();
 }
 
-RStatsConsole::~RStatsConsole() {}
+QgsRStatsConsole::~QgsRStatsConsole()
+{
+    delete mInputEdit;
+    delete mOutput;
+    delete mReadRScript;
+    delete mEmptyRMemory;
+}

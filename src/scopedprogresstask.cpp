@@ -5,8 +5,7 @@
 
 ScopedProgressTask::ScopedProgressTask( const QString &description, bool canCancel )
 {
-    mTask = std::make_unique<ProxyProgressTask>( description, canCancel );
-    QgsApplication::taskManager()->addTask( mTask.get() );
+    QgsApplication::taskManager()->addTask( mTask );
 }
 
 ScopedProgressTask::~ScopedProgressTask() { mTask->finalize( true ); }

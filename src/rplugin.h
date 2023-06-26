@@ -8,8 +8,9 @@
 #include "qgisinterface.h"
 #include "qgisplugin.h"
 
-#include "gui/rstatsconsole.h"
-#include "rstatsrunner.h"
+#include "qgsrstatsconsole.h"
+#include "qgsrstatsrunner.h"
+#include "qgsrstatssettings.h"
 
 class RPlugin : public QObject, public QgisPlugin
 {
@@ -24,17 +25,18 @@ class RPlugin : public QObject, public QgisPlugin
 
     private:
         std::shared_ptr<QgisInterface> mIface = nullptr;
-        std::shared_ptr<RStatsRunner> mRStatsRunner = nullptr;
-        std::shared_ptr<RStatsConsole> mRConsole = nullptr;
+        std::shared_ptr<QgsRStatsRunner> mRStatsRunner = nullptr;
+        std::shared_ptr<QgsRStatsConsole> mRConsole = nullptr;
         std::shared_ptr<QAction> mOpenConsole = nullptr;
+        std::shared_ptr<QgsRStatsSettingsOptionsFactory> mRSettingsFactory = nullptr;
 };
 
-static const QString sName = QStringLiteral( "R Console Plugin" );
+static const QString sName = QStringLiteral( "R Console" );
 static const QString sDescription =
     QStringLiteral( "Plugin that allows running R directly in QGIS in form or R Console." );
 static const QString sCategory = QStringLiteral( "Vector" );
 static const QString sPluginVersion = QStringLiteral( "0.1" );
 static const QgisPlugin::PluginType sPluginType = QgisPlugin::UI;
-static const QString sPluginIcon = QStringLiteral( ":/rplugin/icons/R_logo.svg" );
+static const QString sPluginIcon = QStringLiteral( ":/rplugin/R_logo.svg" );
 
-#endif // CPPTOOLSPLUGIN_H
+#endif

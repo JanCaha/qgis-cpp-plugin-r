@@ -1,22 +1,26 @@
+#include <QFile>
+#include <QMenu>
+
 #include "qgisinterface.h"
 #include "qgsapplication.h"
 #include "qgslogger.h"
 #include "qgsprocessingregistry.h"
 
-#include <QFile>
-#include <QMenu>
-
+#include "qgsrstatssettings.h"
 #include "rplugin.h"
 
 RPlugin::RPlugin( QgisInterface *iface )
     : QgisPlugin( sName, sDescription, sCategory, sPluginVersion, sPluginType ), mIface( iface )
 {
-    mOpenConsole = std::make_shared<QAction>( "Open R Console", this );
+    mOpenConsole = std::make_shared<QAction>( "R Console", this );
     mOpenConsole->setIcon( QIcon( sPluginIcon ) );
+
+    mRSettingsFactory = std::make_shared<QgsRStatsSettingsOptionsFactory>();
 
     connect( mOpenConsole.get(), &QAction::triggered, this, &RPlugin::showConsole );
 
     mIface->pluginMenu()->addAction( mOpenConsole.get() );
+    mIface->registerOptionsWidgetFactory( mRSettingsFactory.get() );
 }
 
 void RPlugin::showConsole()
@@ -30,8 +34,8 @@ void RPlugin::prepareForUse()
 {
     if ( !mRStatsRunner )
     {
-        mRStatsRunner = std::make_shared<RStatsRunner>( mIface );
-        mRConsole = std::make_shared<RStatsConsole>( mIface->mainWindow(), mRStatsRunner, mIface );
+        mRStatsRunner = std::make_shared<QgsRStatsRunner>( mIface );
+        mRConsole = std::make_shared<QgsRStatsConsole>( mIface->mainWindow(), mRStatsRunner, mIface );
     }
 }
 
@@ -44,6 +48,7 @@ void RPlugin::unload()
     mOpenConsole.reset();
     mRConsole.reset();
     mRStatsRunner.reset();
+    mIface->unregisterOptionsWidgetFactory( mRSettingsFactory.get() );
 }
 
 // Class factory to return a new instance of the plugin class
