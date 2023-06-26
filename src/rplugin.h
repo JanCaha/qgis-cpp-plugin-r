@@ -31,7 +31,7 @@ class RPlugin : public QObject, public QgisPlugin
         std::shared_ptr<QgsRStatsSettingsOptionsFactory> mRSettingsFactory = nullptr;
 };
 
-static const QString sName = QStringLiteral( "R Console Plugin" );
+static const QString sName = QStringLiteral( "R Console" );
 static const QString sDescription =
     QStringLiteral( "Plugin that allows running R directly in QGIS in form or R Console." );
 static const QString sCategory = QStringLiteral( "Vector" );
