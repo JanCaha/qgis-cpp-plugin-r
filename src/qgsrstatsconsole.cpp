@@ -19,6 +19,7 @@
 
 #include <QFileDialog>
 #include <QKeyEvent>
+#include <QKeySequence>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QSplitter>
@@ -47,11 +48,21 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
     // toggleButton->setToolTip( tr( "Dock R Stats Console" ) );
     // toolBar->addWidget( toggleButton );
 
-    mReadRScript = new QAction( QgsApplication::getThemeIcon( QStringLiteral( "/mActionFileOpen.svg" ) ),
-                                tr( "Run Script" ), this );
-    toolBar->addAction( mReadRScript );
+    mActionClearConsole =
+        new QAction( QgsApplication::getThemeIcon( "console/iconClearConsole.svg" ), "Clear Console", this );
+    toolBar->addAction( mActionClearConsole );
+    connect( mActionClearConsole, &QAction::triggered, this,
+             [=]()
+             {
+                 mOutput->setText( "" );
+                 mRunner->showStartupMessage();
+             } );
 
-    connect( mReadRScript, &QAction::triggered, this,
+    mActionReadRScript = new QAction( QgsApplication::getThemeIcon( QStringLiteral( "/mActionFileOpen.svg" ) ),
+                                      tr( "Run Script" ), this );
+    toolBar->addAction( mActionReadRScript );
+
+    connect( mActionReadRScript, &QAction::triggered, this,
              [=]()
              {
                  QString fileName =
@@ -69,10 +80,10 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
                  }
              } );
 
-    mEmptyRMemory = new QAction( tr( "Empty R Memory" ), this );
-    toolBar->addAction( mEmptyRMemory );
+    mActionEmptyRMemory = new QAction( tr( "Empty R Memory" ), this );
+    toolBar->addAction( mActionEmptyRMemory );
 
-    connect( mEmptyRMemory, &QAction::triggered, this, [=]() { mRunner->emptyRMemory(); } );
+    connect( mActionEmptyRMemory, &QAction::triggered, this, [=]() { mRunner->emptyRMemory(); } );
 
     QVBoxLayout *vl = new QVBoxLayout();
     vl->setContentsMargins( 0, 0, 0, 0 );
@@ -138,6 +149,6 @@ QgsRStatsConsole::~QgsRStatsConsole()
 {
     delete mInputEdit;
     delete mOutput;
-    delete mReadRScript;
-    delete mEmptyRMemory;
+    delete mActionReadRScript;
+    delete mActionEmptyRMemory;
 }

@@ -38,8 +38,9 @@ class QgsRStatsConsole : public QgsDockWidget
         std::shared_ptr<QgsRStatsRunner> mRunner = nullptr;
         QgsCodeEditorR *mInputEdit = nullptr;
         QgsCodeEditorR *mOutput = nullptr;
-        QAction *mReadRScript = nullptr;
-        QAction *mEmptyRMemory = nullptr;
+        QAction *mActionReadRScript = nullptr;
+        QAction *mActionEmptyRMemory = nullptr;
+        QAction *mActionClearConsole = nullptr;
         std::shared_ptr<QgisInterface> mIface;
 };
 
