@@ -34,20 +34,14 @@
 
 QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRunner> runner,
                                     std::shared_ptr<QgisInterface> iface )
-    : QgsCodeEditorDockWidget( "RConsole", true ), mRunner( runner ), mIface( iface )
+    : QgsCodeEditorDockWidget( "RConsoleWindow", true ), mRunner( runner ), mIface( iface )
 {
+    setTitle( QString( "R Console" ) );
     setWindowTitle( QString( "R Console" ) );
-    setObjectName( QString( "R Console" ) );
-    setWindowFlags( Qt::WindowType::Window );
-
-    // iface->addDockWidget( Qt::DockWidgetArea::BottomDockWidgetArea, this );
+    setDockObjectName( "RConsole" );
 
     QToolBar *toolBar = new QToolBar( this );
     toolBar->setIconSize( iface->iconSize( true ) );
-
-    // QToolButton *toggleButton = mDockableWidgetHelper->createDockUndockToolButton();
-    // toggleButton->setToolTip( tr( "Dock R Stats Console" ) );
-    // toolBar->addWidget( toggleButton );
 
     mActionClearConsole =
         new QAction( QgsApplication::getThemeIcon( "console/iconClearConsole.svg" ), "Clear Console", this );
@@ -96,9 +90,11 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
     splitter->setChildrenCollapsible( false );
 
     mOutput = new QgsCodeEditorR( this, QgsCodeEditor::Mode::OutputDisplay );
+    mOutput->setTitle( "R Console Output" );
     splitter->addWidget( mOutput );
 
     mInputEdit = new QgsCodeEditorR( this, QgsCodeEditor::Mode::CommandInput );
+    mInputEdit->setTitle( "R Console Input" );
     mInputEdit->setFont( QgsCodeEditor::getMonospaceFont() );
     mInputEdit->setInterpreter( mRunner.get() );
 
