@@ -4,7 +4,6 @@
 #include "scopedprogresstask.h"
 
 ScopedProgressTask::ScopedProgressTask( const QString &description, bool canCancel )
-    : mTask( new ProxyProgressTask( description, canCancel ) )
 {
     QgsApplication::taskManager()->addTask( mTask );
 }

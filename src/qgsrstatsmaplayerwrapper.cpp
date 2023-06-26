@@ -37,7 +37,7 @@ SEXP QgsRstatsMapLayerWrapper::featureCount() const
         Q_ASSERT_X( QThread::currentThread() == qApp->thread(), "featureCount",
                     "featureCount must be run on the main thread" );
 
-        if ( QgsMapLayer *layer = QgsProject::instance()->mapLayer( mLayerId ) )
+        if ( QgsMapLayer *layer = mapLayer() )
         {
             if ( QgsVectorLayer *vl = qobject_cast<QgsVectorLayer *>( layer ) )
             {
