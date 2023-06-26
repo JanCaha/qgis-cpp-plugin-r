@@ -19,7 +19,7 @@
 #include <QWidget>
 
 #include "qgisinterface.h"
-#include "qgsdockwidget.h"
+#include "qgscodeeditordockwidget.h"
 
 class QgsInteractiveRWidget;
 class QgsRStatsRunner;
@@ -27,18 +27,20 @@ class QLineEdit;
 class QTextBrowser;
 class QgsCodeEditorR;
 
-class QgsRStatsConsole : public QgsDockWidget
+class QgsRStatsConsole : public QgsCodeEditorDockWidget
 {
     public:
-        QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRunner> runner, std::shared_ptr<QgisInterface> iface );
+        QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRunner> runner,
+                          std::shared_ptr<QgisInterface> iface );
         ~QgsRStatsConsole() override;
 
     private:
         std::shared_ptr<QgsRStatsRunner> mRunner = nullptr;
-        QgsInteractiveRWidget *mInputEdit = nullptr;
+        QgsCodeEditorR *mInputEdit = nullptr;
         QgsCodeEditorR *mOutput = nullptr;
-        QAction *mReadRScript = nullptr;
-        QAction *mEmptyRMemory = nullptr;
+        QAction *mActionReadRScript = nullptr;
+        QAction *mActionEmptyRMemory = nullptr;
+        QAction *mActionClearConsole = nullptr;
         std::shared_ptr<QgisInterface> mIface;
 };
 

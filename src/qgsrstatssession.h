@@ -23,10 +23,8 @@ class QgsRStatsSession : public QObject, public Callbacks
         void execCommandNR( const QString &command );
 
         void WriteConsole( const std::string &line, int type ) override;
-        ;
 
         bool has_WriteConsole() override;
-        ;
 
         void ShowMessage( const char *message ) override;
 

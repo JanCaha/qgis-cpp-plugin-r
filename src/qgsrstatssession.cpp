@@ -408,6 +408,10 @@ void QgsRStatsSession::execCommandNR( const QString &command )
 
 void QgsRStatsSession::execCommand( const QString &command )
 {
+    const std::string line = ">" + command.toStdString();
+
+    WriteConsole( line, 0 );
+
     if ( mBusy )
         return;
 

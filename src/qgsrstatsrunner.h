@@ -24,6 +24,7 @@
 #include "Callbacks.h"
 
 #include "qgisinterface.h"
+#include "qgscodeeditor.h"
 
 #include "qgsrstatssession.h"
 
@@ -31,7 +32,7 @@ class RInside;
 class QVariant;
 class QString;
 
-class QgsRStatsRunner : public QObject
+class QgsRStatsRunner : public QObject, public QgsCodeInterpreter
 {
         Q_OBJECT
     public:
@@ -56,6 +57,9 @@ class QgsRStatsRunner : public QObject
         QThread mSessionThread;
         std::unique_ptr<QgsRStatsSession> mSession;
         std::shared_ptr<QgisInterface> mIface;
+
+        QString promptForState( int state ) const;
+        int execCommandImpl( const QString &command );
 };
 
 #endif // QGSRSTATSRUNNER_H

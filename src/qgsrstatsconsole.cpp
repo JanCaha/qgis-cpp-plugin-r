@@ -19,27 +19,28 @@
 
 #include <QFileDialog>
 #include <QKeyEvent>
+#include <QKeySequence>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QSplitter>
 #include <QTextBrowser>
 #include <QTextStream>
 #include <QToolBar>
+#include <QToolButton>
 #include <QVBoxLayout>
 
-#include "qgsinteractiverwidget.h"
 #include "qgsrstatsconsole.h"
 #include "qgsrstatsrunner.h"
 
 QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRunner> runner,
                                     std::shared_ptr<QgisInterface> iface )
-    : QgsDockWidget( parent ), mRunner( runner ), mIface( iface )
+    : QgsCodeEditorDockWidget( "RConsole", true ), mRunner( runner ), mIface( iface )
 {
     setWindowTitle( QString( "R Console" ) );
     setObjectName( QString( "R Console" ) );
     setWindowFlags( Qt::WindowType::Window );
 
-    iface->addDockWidget( Qt::DockWidgetArea::BottomDockWidgetArea, this );
+    // iface->addDockWidget( Qt::DockWidgetArea::BottomDockWidgetArea, this );
 
     QToolBar *toolBar = new QToolBar( this );
     toolBar->setIconSize( iface->iconSize( true ) );
@@ -48,11 +49,21 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
     // toggleButton->setToolTip( tr( "Dock R Stats Console" ) );
     // toolBar->addWidget( toggleButton );
 
-    mReadRScript = new QAction( QgsApplication::getThemeIcon( QStringLiteral( "/mActionFileOpen.svg" ) ),
-                                tr( "Run Script" ), this );
-    toolBar->addAction( mReadRScript );
+    mActionClearConsole =
+        new QAction( QgsApplication::getThemeIcon( "console/iconClearConsole.svg" ), "Clear Console", this );
+    toolBar->addAction( mActionClearConsole );
+    connect( mActionClearConsole, &QAction::triggered, this,
+             [=]()
+             {
+                 mOutput->setText( "" );
+                 mRunner->showStartupMessage();
+             } );
 
-    connect( mReadRScript, &QAction::triggered, this,
+    mActionReadRScript = new QAction( QgsApplication::getThemeIcon( QStringLiteral( "/mActionFileOpen.svg" ) ),
+                                      tr( "Run Script" ), this );
+    toolBar->addAction( mActionReadRScript );
+
+    connect( mActionReadRScript, &QAction::triggered, this,
              [=]()
              {
                  QString fileName =
@@ -70,10 +81,10 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
                  }
              } );
 
-    mEmptyRMemory = new QAction( tr( "Empty R Memory" ), this );
-    toolBar->addAction( mEmptyRMemory );
+    mActionEmptyRMemory = new QAction( tr( "Empty R Memory" ), this );
+    toolBar->addAction( mActionEmptyRMemory );
 
-    connect( mEmptyRMemory, &QAction::triggered, this, [=]() { mRunner->emptyRMemory(); } );
+    connect( mActionEmptyRMemory, &QAction::triggered, this, [=]() { mRunner->emptyRMemory(); } );
 
     QVBoxLayout *vl = new QVBoxLayout();
     vl->setContentsMargins( 0, 0, 0, 0 );
@@ -84,31 +95,18 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
     splitter->setHandleWidth( 3 );
     splitter->setChildrenCollapsible( false );
 
-    mOutput = new QgsCodeEditorR( nullptr, QgsCodeEditor::Mode::OutputDisplay );
+    mOutput = new QgsCodeEditorR( this, QgsCodeEditor::Mode::OutputDisplay );
     splitter->addWidget( mOutput );
-    mInputEdit = new QgsInteractiveRWidget();
+
+    mInputEdit = new QgsCodeEditorR( this, QgsCodeEditor::Mode::CommandInput );
     mInputEdit->setFont( QgsCodeEditor::getMonospaceFont() );
+    mInputEdit->setInterpreter( mRunner.get() );
+
     splitter->addWidget( mInputEdit );
 
     vl->addWidget( splitter );
 
-    QWidget *w = new QWidget( this );
-    w->setLayout( vl );
-
-    setWidget( w );
-
-    connect( mInputEdit, &QgsInteractiveRWidget::runCommand, this,
-             [=]( const QString &command )
-             {
-                 if ( mRunner->busy() )
-                     return;
-
-                 mInputEdit->clear();
-                 mOutput->append( ( mOutput->text().isEmpty() ? QString() : QString( '\n' ) ) + QStringLiteral( "> " ) +
-                                  command );
-                 mOutput->moveCursorToEnd();
-                 mRunner->execCommand( command );
-             } );
+    setLayout( vl );
 
     connect( mRunner.get(), &QgsRStatsRunner::errorOccurred, this,
              [=]( const QString &error )
@@ -142,6 +140,9 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
 
     // setLayout( vl );
 
+    toolBar->addSeparator();
+    toolBar->addWidget( dockToggleButton() );
+
     mRunner->showStartupMessage();
 }
 
@@ -149,6 +150,6 @@ QgsRStatsConsole::~QgsRStatsConsole()
 {
     delete mInputEdit;
     delete mOutput;
-    delete mReadRScript;
-    delete mEmptyRMemory;
+    delete mActionReadRScript;
+    delete mActionEmptyRMemory;
 }
