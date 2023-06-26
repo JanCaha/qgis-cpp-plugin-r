@@ -38,4 +38,4 @@ static const QString sPluginVersion = QStringLiteral( "0.1" );
 static const QgisPlugin::PluginType sPluginType = QgisPlugin::UI;
 static const QString sPluginIcon = QStringLiteral( ":/rplugin/R_logo.svg" );
 
-#endif 
+#endif
