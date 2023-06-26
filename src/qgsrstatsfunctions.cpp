@@ -118,9 +118,9 @@ SEXP QgRstatsFunctions::dfToLayer( SEXP data )
 
     Rcpp::DataFrame df = Rcpp::as<Rcpp::DataFrame>( data );
 
-    bool isDdataFrame = df.inherits( "data.frame" );
+    bool isDataFrame = df.inherits( "data.frame" );
 
-    if ( !isDdataFrame )
+    if ( !isDataFrame )
         return Rcpp::wrap( false );
 
     Rcpp::StringVector dfColumnNames = df.names();
