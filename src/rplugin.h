@@ -10,6 +10,7 @@
 
 #include "qgsrstatsconsole.h"
 #include "qgsrstatsrunner.h"
+#include "qgsrstatssettings.h"
 
 class RPlugin : public QObject, public QgisPlugin
 {
