@@ -172,16 +172,13 @@ SEXP QgRstatsFunctions::dfToLayer( SEXP data )
         for ( int i = 0; i < df.nrows(); i++ )
         {
 
-            if ( task->isCanceled() )
-                break;
-
             QgsFeature feature( fields );
 
             QgsRstatsUtils::prepareFeature( feature, df, i, geometries );
 
-            const double progress = 100 * ( double( i ) / double( df.nrows() ) );
-
             features.append( feature );
+
+            const double progress = 100 * ( double( i ) / double( df.nrows() ) );
             task->setProgress( progress );
         }
 
