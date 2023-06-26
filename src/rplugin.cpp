@@ -26,8 +26,7 @@ RPlugin::RPlugin( QgisInterface *iface )
 void RPlugin::showConsole()
 {
     prepareForUse();
-    mRConsole->show();
-    mRConsole->raise();
+    mRConsole->setUserVisible(true);
 }
 
 void RPlugin::prepareForUse()
