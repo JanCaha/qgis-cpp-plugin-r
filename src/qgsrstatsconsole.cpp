@@ -60,8 +60,8 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
     connect( mActionReadRScript, &QAction::triggered, this,
              [=]()
              {
-                 QString fileName =
-                     QFileDialog::getOpenFileName( this, tr( "Open Script" ), "/home", tr( "R Files (*.R *.r)" ) );
+                 QString fileName = QFileDialog::getOpenFileName( this, tr( "Open Script" ), "/home/cahik/R",
+                                                                  tr( "R Files (*.R *.r)" ) );
                  QFile inputFile( fileName );
                  if ( inputFile.open( QIODevice::ReadOnly ) )
                  {
