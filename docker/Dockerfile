@@ -47,6 +47,8 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get -y -q install clang clang-14 lld-14 libclang-14-dev  ninja-build g++-12 doxygen cmake libgtest-dev && \
     apt -y -q install qgis qgis-dev qgis-plugin-grass && \
     apt -y -q install r-base r-base-dev && \
+    # libraries for r packages
+    apt -y -q install libudunits2-dev gdal-bin  libgdal-dev libgit2-dev libharfbuzz-dev libfribidi-dev libssh-dev qpdf && \
     apt-get clean autoclean && \
     apt-get autoremove --yes && \
     rm -rf /var/lib/apt/lists/*
