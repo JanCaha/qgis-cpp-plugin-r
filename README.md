@@ -59,3 +59,15 @@ lyr$isRasterLayer
 lyr$tableToDf # converts attribute table to R data.frame (only the table, no geometries)
 lyr$toSf # converts the layer into sf data.frame (with geometry column and crs set from the layer)
 ```
+
+## Running in a Docker
+
+```bash
+xhost +
+docker run --rm -it \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -e DISPLAY=unix$DISPLAY \
+    cahik/qgis-r-plugin:latest \
+    /bin/bash -c qgis
+xhost -
+```
