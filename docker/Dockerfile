@@ -51,7 +51,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get autoremove --yes && \
     rm -rf /var/lib/apt/lists/*
 
-RUN Rscript -e "install.packages(c('Rcpp'))"
+RUN Rscript -e "install.packages(c('Rcpp', 'tidyverse', 'sf', 'terra', 'raster', 'star', 'wk'))"
 
 RUN export CXX=/usr/bin/clang++ && \
     export CC=/usr/bin/clang
