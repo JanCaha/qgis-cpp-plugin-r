@@ -45,8 +45,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
     apt-get -y -q install --no-install-recommends wget cmake software-properties-common build-essential ca-certificates python3-pip dialog apt-utils && \
     apt-get -y -q install clang clang-14 lld-14 libclang-14-dev  ninja-build g++-12 doxygen cmake libgtest-dev && \
-    apt update && \
-    apt upgrade -y -q && \
     apt -y -q install qgis qgis-dev qgis-plugin-grass && \
     apt -y -q install r-base r-base-dev && \
     apt-get clean autoclean && \
