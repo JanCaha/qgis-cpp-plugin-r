@@ -6,6 +6,8 @@ project(
   DESCRIPTION "Cpp plugin that allows running R from within QGIS"
   LANGUAGES CXX)
 
+option(DOCKER_RELEASE "Prepare release in docker." OFF)
+
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
@@ -86,3 +88,11 @@ add_subdirectory(src)
 # if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME) AND BUILD_TESTING)
 # add_subdirectory(tests)
 # endif()
+if(DOCKER_RELEASE)
+  ADD_CUSTOM_COMMAND(
+    TARGET r_plugin POST_BUILD
+    COMMAND cp ${CMAKE_BINARY_DIR}/src/libr_plugin.so ${QGIS_PLUGIN_DIR}/libr_plugin.so
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Copy final library to QGIS plugins folder."
+  )
+endif()
