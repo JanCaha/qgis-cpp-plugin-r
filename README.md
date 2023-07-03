@@ -71,3 +71,5 @@ docker run --rm -it \
     /bin/bash -c qgis
 xhost -
 ```
+
+**You need to active the plugin in the Plugins menu in QGIS. The plugin is installed but not activated!!!**
