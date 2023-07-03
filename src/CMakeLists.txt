@@ -58,3 +58,12 @@ ADD_CUSTOM_COMMAND(
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   COMMENT "Copy final library to folder"
 )
+
+if(DOCKER_RELEASE)
+  ADD_CUSTOM_COMMAND(
+    TARGET r_plugin POST_BUILD
+    COMMAND cp ${CMAKE_BINARY_DIR}/src/libr_plugin.so ${QGIS_PLUGIN_DIR}/libr_plugin.so
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Copy final library to QGIS plugins folder."
+  )
+endif()
