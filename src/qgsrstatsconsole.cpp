@@ -75,10 +75,13 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
                  }
              } );
 
-    mActionEmptyRMemory = new QAction( tr( "Empty R Memory" ), this );
+    mActionEmptyRMemory = new QAction( mDefaulEmptryRMemoryLabel.arg( "0 MiB" ), this );
     toolBar->addAction( mActionEmptyRMemory );
 
     connect( mActionEmptyRMemory, &QAction::triggered, this, [=]() { mRunner->emptyRMemory(); } );
+
+    connect( mRunner.get(), &QgsRStatsRunner::usedMemoryChanged, this,
+             [=]( QString memory ) { mActionEmptyRMemory->setText( mDefaulEmptryRMemoryLabel.arg( memory ) ); } );
 
     QVBoxLayout *vl = new QVBoxLayout();
     vl->setContentsMargins( 0, 0, 0, 0 );
@@ -131,6 +134,7 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
     connect( mRunner.get(), &QgsRStatsRunner::busyChanged, this,
              [=]( bool busy )
              {
+                 mOutput->setEnabled( !busy );
                  // mInputEdit->setEnabled( !busy );
              } );
 

@@ -437,6 +437,7 @@ void QgsRStatsSession::execCommand( const QString &command )
     else
     {
         emit commandFinished( res );
+        emit usedMemoryChanged( usedMemory() );
     }
 
     mBusy = false;
@@ -474,4 +475,19 @@ void QgsRStatsSession::emptyRMemory()
 
     prepareQgisApplicationWrapper();
     prepareConvertFunctions();
+    emit usedMemoryChanged( usedMemory() );
+}
+
+QString QgsRStatsSession::usedMemory()
+{
+
+    QVariant *result = new QVariant();
+    QString command = QStringLiteral( "vars<-ls();"
+                                      "size<-object.size(0);"
+                                      "for(var in vars){size<-size+object.size(get(var))};"
+                                      "format(size,units='MiB')" );
+    QString error;
+    execCommandPrivate( command, error, result );
+
+    return result->toString();
 }

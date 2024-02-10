@@ -52,6 +52,7 @@ class QgsRStatsRunner : public QObject, public QgsCodeInterpreter
         void errorOccurred( const QString &error );
         void busyChanged( bool busy );
         void commandFinished( const QVariant &result );
+        void usedMemoryChanged( const QString memoryUsed );
 
     private:
         QThread mSessionThread;

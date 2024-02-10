@@ -31,6 +31,7 @@ QgsRStatsRunner::QgsRStatsRunner( std::shared_ptr<QgisInterface> iface ) : mIfac
     connect( mSession.get(), &QgsRStatsSession::errorOccurred, this, &QgsRStatsRunner::errorOccurred );
     connect( mSession.get(), &QgsRStatsSession::busyChanged, this, &QgsRStatsRunner::busyChanged );
     connect( mSession.get(), &QgsRStatsSession::commandFinished, this, &QgsRStatsRunner::commandFinished );
+    connect( mSession.get(), &QgsRStatsSession::usedMemoryChanged, this, &QgsRStatsRunner::usedMemoryChanged );
 }
 
 QgsRStatsRunner::~QgsRStatsRunner()

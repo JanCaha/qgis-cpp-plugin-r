@@ -52,6 +52,8 @@ class QgsRStatsSession : public QObject, public Callbacks
          */
         void emptyRMemory();
 
+        QString usedMemory();
+
     public slots:
 
         void execCommand( const QString &command );
@@ -68,6 +70,8 @@ class QgsRStatsSession : public QObject, public Callbacks
         void showMessage( const QString &message );
         void errorOccurred( const QString &error );
         void commandFinished( const QVariant &result );
+
+        void usedMemoryChanged( const QString memoryUsed );
 
     private:
         void execCommandPrivate( const QString &command, QString &error, QVariant *res = nullptr,

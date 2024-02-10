@@ -42,6 +42,7 @@ class QgsRStatsConsole : public QgsCodeEditorDockWidget
         QAction *mActionEmptyRMemory = nullptr;
         QAction *mActionClearConsole = nullptr;
         std::shared_ptr<QgisInterface> mIface;
+        QString mDefaulEmptryRMemoryLabel = QString( "Empty R Memory (used %1)" );
 };
 
 #endif // QGSRSTATSCONSOLE_H
