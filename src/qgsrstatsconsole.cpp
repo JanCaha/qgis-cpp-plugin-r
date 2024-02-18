@@ -47,7 +47,7 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
         new QAction( QgsApplication::getThemeIcon( "console/iconClearConsole.svg" ), "Clear Console", this );
     toolBar->addAction( mActionClearConsole );
     connect( mActionClearConsole, &QAction::triggered, this,
-             [=]()
+             [this]()
              {
                  mOutput->setText( "" );
                  mRunner->showStartupMessage();
@@ -58,7 +58,7 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
     toolBar->addAction( mActionReadRScript );
 
     connect( mActionReadRScript, &QAction::triggered, this,
-             [=]()
+             [this]()
              {
                  QString fileName = QFileDialog::getOpenFileName( this, tr( "Open Script" ), "/home/cahik/R",
                                                                   tr( "R Files (*.R *.r)" ) );
@@ -78,10 +78,10 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
     mActionEmptyRMemory = new QAction( mDefaulEmptryRMemoryLabel.arg( "0 MiB" ), this );
     toolBar->addAction( mActionEmptyRMemory );
 
-    connect( mActionEmptyRMemory, &QAction::triggered, this, [=]() { mRunner->emptyRMemory(); } );
+    connect( mActionEmptyRMemory, &QAction::triggered, this, [this]() { mRunner->emptyRMemory(); } );
 
     connect( mRunner.get(), &QgsRStatsRunner::usedMemoryChanged, this,
-             [=]( QString memory ) { mActionEmptyRMemory->setText( mDefaulEmptryRMemoryLabel.arg( memory ) ); } );
+             [this]( QString memory ) { mActionEmptyRMemory->setText( mDefaulEmptryRMemoryLabel.arg( memory ) ); } );
 
     QVBoxLayout *vl = new QVBoxLayout();
     vl->setContentsMargins( 0, 0, 0, 0 );
@@ -108,14 +108,14 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
     setLayout( vl );
 
     connect( mRunner.get(), &QgsRStatsRunner::errorOccurred, this,
-             [=]( const QString &error )
+             [this]( const QString &error )
              {
                  mOutput->append( ( mOutput->text().isEmpty() ? QString() : QString( '\n' ) ) + error );
                  mOutput->moveCursorToEnd();
              } );
 
     connect( mRunner.get(), &QgsRStatsRunner::consoleMessage, this,
-             [=]( const QString &message, int type )
+             [this]( const QString &message, int type )
              {
                  if ( type == 0 )
                      mOutput->append( ( mOutput->text().isEmpty() ? QString() : QString( '\n' ) ) + message );
@@ -125,14 +125,14 @@ QgsRStatsConsole::QgsRStatsConsole( QWidget *parent, std::shared_ptr<QgsRStatsRu
              } );
 
     connect( mRunner.get(), &QgsRStatsRunner::showMessage, this,
-             [=]( const QString &message )
+             [this]( const QString &message )
              {
                  mOutput->append( ( mOutput->text().isEmpty() ? QString() : QString( '\n' ) ) + message );
                  mOutput->moveCursorToEnd();
              } );
 
     connect( mRunner.get(), &QgsRStatsRunner::busyChanged, this,
-             [=]( bool busy )
+             [this]( bool busy )
              {
                  mOutput->setEnabled( !busy );
                  // mInputEdit->setEnabled( !busy );
